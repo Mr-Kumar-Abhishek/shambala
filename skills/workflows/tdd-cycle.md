@@ -196,6 +196,143 @@ A feature or bug fix is considered **Done** when all of the following are true:
 | **Committed** | Commit messages follow conventional commits format |
 | **Merged** | PR merged into the main branch |
 
+### 6. Sprint 2: Rendering & Game Loop Testing
+
+Sprint 2 introduces the rendering pipeline and game loop, which require specialised testing approaches beyond standard ECS system tests.
+
+#### Rendering Code Requires Special Testing Approaches
+
+GPU-dependent code cannot run in headless CI environments. Use these strategies:
+
+| Approach | When to Use | How |
+|---|---|---|
+| **Mock GPU (headless device)** | Testing pipeline creation, shader compilation, bind group layout validation | Create a [`MockRenderContext`](../game-dev/testing-patterns.md#testing-wgpu-pipeline-creation-mock-surface) with `wgpu::Instance::new_headless()` — no window or surface required |
+| **Pure function extraction** | Testing sprite batching, viewport culling, animation frame calculation | Extract data transformation logic from render systems into pure functions testable without any GPU context |
+| **Feature-gated integration tests** | Full render pipeline smoke tests that require a real GPU | Gate with `#[cfg_attr(feature = "headless", ignore)]` — run locally, skip in CI |
+| **Snapshot testing** | Verifying visual output structure (vertex counts, batch order, draw call parameters) | Assert on the data structures produced by render systems, not on pixel output |
+
+**RED phase for rendering:**
+```rust
+// Pure function test — no GPU needed
+#[test]
+fn test_collect_sprites_filters_by_viewport() {
+    let mut world = World::new();
+    let camera = Camera { x: 0.0, y: 0.0, zoom: 1.0, ..Default::default() };
+
+    // Sprite inside viewport
+    world.spawn((
+        Position::new(100.0, 100.0),
+        Renderable { texture_id: "a.png".into(), visible: true, size: (32.0, 32.0), ..Default::default() },
+        DepthLayer(0),
+    ));
+    // Sprite outside viewport
+    world.spawn((
+        Position::new(5000.0, 5000.0),
+        Renderable { texture_id: "b.png".into(), visible: true, size: (32.0, 32.0), ..Default::default() },
+        DepthLayer(0),
+    ));
+
+    let visible = collect_sprites_in_viewport(&world, &camera, 800.0, 600.0);
+    assert_eq!(visible.len(), 1, "Only sprites inside the viewport should be collected");
+}
+```
+
+**GREEN phase:**
+```rust
+pub fn collect_sprites_in_viewport(
+    world: &World,
+    camera: &Camera,
+    screen_w: f32,
+    screen_h: f32,
+) -> Vec<SpriteBatch> {
+    let all_sprites = collect_sprites(world);
+    all_sprites.into_iter().filter(|batch| {
+        batch.instances.iter().any(|inst| {
+            let left = inst.position[0];
+            let right = inst.position[0] + inst.size[0];
+            let top = inst.position[1];
+            let bottom = inst.position[1] + inst.size[1];
+            let view_left = camera.x - screen_w / (2.0 * camera.zoom);
+            let view_right = camera.x + screen_w / (2.0 * camera.zoom);
+            let view_top = camera.y - screen_h / (2.0 * camera.zoom);
+            let view_bottom = camera.y + screen_h / (2.0 * camera.zoom);
+            right >= view_left && left <= view_right && bottom >= view_top && top <= view_bottom
+        })
+    }).collect()
+}
+```
+
+#### Integration Tests for Game Loop Timing
+
+The game loop drives frame updates at a fixed timestep. Test timing correctness without a real window.
+
+```rust
+#[test]
+fn test_fixed_timestep_accumulates_correctly() {
+    let mut game_loop = GameLoop::new(60.0); // 60 FPS target
+    let mut update_count = 0;
+
+    // Simulate a frame with variable real time
+    game_loop.begin_frame(0.0);       // First frame at t=0
+    game_loop.begin_frame(0.008);     // 8ms real time — less than one tick (16.67ms)
+    assert_eq!(game_loop.pending_updates(), 0, "Should not accumulate a full tick yet");
+
+    game_loop.begin_frame(0.025);     // 25ms real time — total 33ms, ~2 ticks
+    assert_eq!(game_loop.pending_updates(), 2, "Should accumulate 2 fixed updates");
+}
+
+#[test]
+fn test_game_loop_spiral_of_death_prevention() {
+    let mut game_loop = GameLoop::new(60.0);
+    game_loop.set_max_frame_time(0.1); // Cap at 100ms to prevent spiral of death
+
+    // Simulate a very long frame (500ms)
+    game_loop.begin_frame(0.5);
+
+    // Should cap at max_frame_time / fixed_delta = 0.1 / 0.01667 ≈ 6 updates
+    assert!(
+        game_loop.pending_updates() <= 6,
+        "Should cap updates to prevent spiral of death"
+    );
+}
+
+#[test]
+fn test_render_interpolation_factor() {
+    let mut game_loop = GameLoop::new(60.0);
+
+    game_loop.begin_frame(0.005); // 5ms into a 16.67ms tick
+    let alpha = game_loop.interpolation_factor();
+
+    assert!(
+        (alpha - 0.3).abs() < 0.05,
+        "Interpolation factor should be ~0.3 for 5ms into a 16.67ms tick"
+    );
+}
+```
+
+#### Visual Testing Considerations
+
+Visual correctness cannot be fully automated. Use these complementary approaches:
+
+| Method | Purpose | Tool / Technique |
+|---|---|---|
+| **Manual visual review** | Verify colours, layout, animation smoothness | Run the game locally and observe |
+| **Structure assertions** | Verify draw call count, batch composition, sprite ordering | Unit tests on render data structures |
+| **Shader compilation tests** | Verify WGSL shaders compile without errors | Headless device + `device.create_shader_module()` |
+| **Performance benchmarks** | Detect FPS regressions, draw call spikes | `cargo bench` with sprite batching benchmarks |
+| **Logging-based verification** | Capture render pass structure in logs for manual review | `tracing` or `log` crate with structured events |
+
+**Checklist for rendering PRs:**
+- [ ] All pure render logic has unit tests (batching, culling, animation)
+- [ ] Pipeline creation tests pass with headless device
+- [ ] Shader compilation does not produce errors or warnings
+- [ ] Sprite batching benchmark shows no regression
+- [ ] Game loop timing tests pass (fixed timestep, interpolation)
+- [ ] Manual visual check performed: sprites render at correct positions
+- [ ] UI overlay renders on top of game world correctly
+- [ ] Camera follow and shake behave as expected
+- [ ] No GPU-only tests run in headless CI (feature-gated)
+
 ## Examples
 
 ### Complete TDD Session: Adding a Status Effect System
@@ -291,7 +428,8 @@ pub fn status_effect_system(
 ```
 
 ## Related Skills
-- [`testing-patterns.md`](../game-dev/testing-patterns.md) — How to write tests for ECS systems
+- [`testing-patterns.md`](../game-dev/testing-patterns.md) — How to write tests for ECS systems and rendering code
+- [`rendering-pipeline.md`](../game-dev/rendering-pipeline.md) — Rendering pipeline implementation patterns
 - [`ecs-patterns.md`](../game-dev/ecs-patterns.md) — ECS fundamentals for system implementation
 - [`git-workflow.md`](git-workflow.md) — Commit message conventions and PR process
 - [`../docs/TDD_GUIDE.md`](../docs/TDD_GUIDE.md) — Full TDD guide with detailed examples

@@ -417,6 +417,468 @@ cargo bench -- --baseline main
 # Available at target/criterion/report/index.html
 ```
 
+### 5. Rendering Test Patterns
+
+Rendering code requires special testing approaches because GPU resources are unavailable in headless CI environments. Use these patterns to test rendering logic without a physical GPU.
+
+#### Testing wgpu Pipeline Creation (Mock Surface)
+
+Create a mock surface and adapter for testing pipeline creation without a real window.
+
+```rust
+// tests/helpers/mock_render.rs
+use wgpu;
+
+pub struct MockRenderContext {
+    pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
+    pub format: wgpu::TextureFormat,
+}
+
+impl MockRenderContext {
+    /// Creates a headless device for testing pipeline creation.
+    /// Does NOT require a window or real surface.
+    pub async fn new_headless() -> Self {
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::PRIMARY,
+            ..Default::default()
+        });
+
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                compatible_surface: None, // No surface needed
+                ..Default::default()
+            })
+            .await
+            .expect("No suitable GPU adapter found");
+
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    label: Some("Test Device"),
+                    features: wgpu::Features::empty(),
+                    limits: wgpu::Limits::default(),
+                },
+                None,
+            )
+            .await
+            .expect("Failed to create test device");
+
+        let format = wgpu::TextureFormat::Bgra8UnormSrgb;
+
+        Self { device, queue, format }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_sprite_pipeline_creation() {
+        let ctx = MockRenderContext::new_headless().await;
+
+        let shader = ctx.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("Test Shader"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("../shaders/sprite.wgsl").into()),
+        });
+
+        let pipeline_layout = ctx.device.create_pipeline_layout(
+            &wgpu::PipelineLayoutDescriptor {
+                label: Some("Test Pipeline Layout"),
+                bind_group_layouts: &[],
+                push_constant_ranges: &[],
+            },
+        );
+
+        let pipeline = ctx.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Test Sprite Pipeline"),
+            layout: Some(&pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: "vs_main",
+                buffers: &[],
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: "fs_main",
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: ctx.format,
+                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState::default(),
+            multiview: None,
+        });
+
+        // Verify pipeline was created successfully
+        // (No GPU execution needed — just validation)
+        assert!(!pipeline.is_null());
+    }
+}
+```
+
+#### Testing Sprite Batching Logic (Unit Tests Without GPU)
+
+Sprite batching is pure data transformation — test it without any GPU context.
+
+```rust
+#[cfg(test)]
+mod sprite_batching_tests {
+    use shambala::*;
+
+    /// Test that sprites with the same texture are grouped into one batch.
+    #[test]
+    fn test_same_texture_sprites_are_batched_together() {
+        let mut world = World::new();
+
+        // Spawn two sprites sharing the same texture
+        let _e1 = world.spawn((
+            Position::new(10.0, 20.0),
+            Renderable {
+                texture_id: "characters.png".into(),
+                sprite_index: 0,
+                size: (32.0, 32.0),
+                color: [1.0; 4],
+                visible: true,
+                flip_x: false,
+                flip_y: false,
+            },
+            DepthLayer(1),
+        )).id();
+
+        let _e2 = world.spawn((
+            Position::new(50.0, 60.0),
+            Renderable {
+                texture_id: "characters.png".into(),
+                sprite_index: 1,
+                size: (32.0, 32.0),
+                color: [1.0; 4],
+                visible: true,
+                flip_x: false,
+                flip_y: false,
+            },
+            DepthLayer(1),
+        )).id();
+
+        let batches = collect_sprites(&world);
+
+        assert_eq!(batches.len(), 1, "Both sprites share the same texture");
+        assert_eq!(batches[0].instances.len(), 2, "Batch should contain both instances");
+    }
+
+    /// Test that invisible sprites are excluded from batches.
+    #[test]
+    fn test_invisible_sprites_are_excluded() {
+        let mut world = World::new();
+
+        let _visible = world.spawn((
+            Position::new(0.0, 0.0),
+            Renderable {
+                texture_id: "ui.png".into(),
+                visible: true,
+                ..Default::default()
+            },
+            DepthLayer(0),
+        )).id();
+
+        let _hidden = world.spawn((
+            Position::new(0.0, 0.0),
+            Renderable {
+                texture_id: "ui.png".into(),
+                visible: false,
+                ..Default::default()
+            },
+            DepthLayer(0),
+        )).id();
+
+        let batches = collect_sprites(&world);
+
+        let total_instances: usize = batches.iter().map(|b| b.instances.len()).sum();
+        assert_eq!(total_instances, 1, "Invisible sprites must be excluded");
+    }
+
+    /// Test that batches are sorted by depth layer for correct draw order.
+    #[test]
+    fn test_batches_sorted_by_depth() {
+        let mut world = World::new();
+
+        let _bg = world.spawn((
+            Position::new(0.0, 0.0),
+            Renderable {
+                texture_id: "bg.png".into(),
+                visible: true,
+                ..Default::default()
+            },
+            DepthLayer(0),
+        )).id();
+
+        let _fg = world.spawn((
+            Position::new(0.0, 0.0),
+            Renderable {
+                texture_id: "fg.png".into(),
+                visible: true,
+                ..Default::default()
+            },
+            DepthLayer(10),
+        )).id();
+
+        let batches = collect_sprites(&world);
+
+        assert_eq!(batches.len(), 2);
+        // Background (depth 0) must come before foreground (depth 10)
+        assert!(
+            batches[0].instances[0].depth <= batches[1].instances[0].depth,
+            "Batches must be sorted by depth layer"
+        );
+    }
+}
+```
+
+#### Testing Viewport Culling
+
+Viewport culling determines which sprites are visible on screen. Test the culling logic independently.
+
+```rust
+#[cfg(test)]
+mod viewport_culling_tests {
+    use shambala::*;
+
+    /// Helper: creates a camera centred at (0, 0) with given screen dimensions.
+    fn test_camera(screen_w: f32, screen_h: f32) -> Camera {
+        Camera {
+            x: 0.0,
+            y: 0.0,
+            zoom: 1.0,
+            ..Default::default()
+        }
+    }
+
+    /// A sprite is visible if its bounding box overlaps the camera viewport.
+    fn is_sprite_visible(
+        position: &Position,
+        renderable: &Renderable,
+        camera: &Camera,
+        screen_w: f32,
+        screen_h: f32,
+    ) -> bool {
+        // Viewport bounds in world space
+        let view_left = camera.x - screen_w / (2.0 * camera.zoom);
+        let view_right = camera.x + screen_w / (2.0 * camera.zoom);
+        let view_top = camera.y - screen_h / (2.0 * camera.zoom);
+        let view_bottom = camera.y + screen_h / (2.0 * camera.zoom);
+
+        // Sprite bounding box
+        let sprite_left = position.x;
+        let sprite_right = position.x + renderable.size.0;
+        let sprite_top = position.y;
+        let sprite_bottom = position.y + renderable.size.1;
+
+        // AABB overlap check
+        sprite_right >= view_left
+            && sprite_left <= view_right
+            && sprite_bottom >= view_top
+            && sprite_top <= view_bottom
+    }
+
+    #[test]
+    fn test_sprite_inside_viewport_is_visible() {
+        let camera = test_camera(800.0, 600.0);
+        let pos = Position::new(100.0, 100.0);
+        let renderable = Renderable {
+            size: (32.0, 32.0),
+            visible: true,
+            ..Default::default()
+        };
+
+        assert!(is_sprite_visible(&pos, &renderable, &camera, 800.0, 600.0));
+    }
+
+    #[test]
+    fn test_sprite_outside_viewport_is_culled() {
+        let camera = test_camera(800.0, 600.0);
+        // Sprite far to the right of the viewport
+        let pos = Position::new(5000.0, 100.0);
+        let renderable = Renderable {
+            size: (32.0, 32.0),
+            visible: true,
+            ..Default::default()
+        };
+
+        assert!(!is_sprite_visible(&pos, &renderable, &camera, 800.0, 600.0));
+    }
+
+    #[test]
+    fn test_sprite_partially_visible_is_not_culled() {
+        let camera = test_camera(800.0, 600.0);
+        // Sprite at the left edge, partially visible
+        let pos = Position::new(-10.0, 100.0);
+        let renderable = Renderable {
+            size: (32.0, 32.0),
+            visible: true,
+            ..Default::default()
+        };
+
+        assert!(is_sprite_visible(&pos, &renderable, &camera, 800.0, 600.0));
+    }
+
+    #[test]
+    fn test_culling_respects_zoom() {
+        let mut camera = test_camera(800.0, 600.0);
+        camera.zoom = 2.0; // Zoomed in — viewport is smaller
+
+        // Sprite visible at zoom=1.0 but outside zoom=2.0 viewport
+        let pos = Position::new(300.0, 0.0);
+        let renderable = Renderable {
+            size: (32.0, 32.0),
+            visible: true,
+            ..Default::default()
+        };
+
+        // At zoom=2.0, viewport is 400x300 world units centred on (0,0)
+        // So right edge is at 200 — sprite at 300 is outside
+        assert!(!is_sprite_visible(&pos, &renderable, &camera, 800.0, 600.0));
+    }
+}
+```
+
+#### Testing Animation Frame Calculation
+
+Animation frame advancement is pure logic — no GPU needed.
+
+```rust
+#[cfg(test)]
+mod animation_tests {
+    use shambala::*;
+
+    #[test]
+    fn test_animation_advances_frame_after_duration() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2],
+            frame_duration: 0.5,
+            current_frame: 0,
+            timer: 0.0,
+            looping: true,
+            playing: true,
+        };
+
+        // Advance by exactly one frame duration
+        advance_animation(&mut anim, 0.5);
+
+        assert_eq!(anim.current_frame, 1, "Should advance to next frame");
+        assert_eq!(anim.timer, 0.0, "Timer should reset after advancing");
+    }
+
+    #[test]
+    fn test_animation_does_not_advance_before_duration() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2],
+            frame_duration: 0.5,
+            current_frame: 0,
+            timer: 0.0,
+            looping: true,
+            playing: true,
+        };
+
+        // Advance by less than one frame duration
+        advance_animation(&mut anim, 0.3);
+
+        assert_eq!(anim.current_frame, 0, "Should stay on current frame");
+        assert!((anim.timer - 0.3).abs() < f32::EPSILON, "Timer should accumulate");
+    }
+
+    #[test]
+    fn test_animation_loops_when_reaching_end() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2],
+            frame_duration: 0.5,
+            current_frame: 2, // At the last frame
+            timer: 0.0,
+            looping: true,
+            playing: true,
+        };
+
+        // Advance past the end
+        advance_animation(&mut anim, 0.5);
+
+        assert_eq!(anim.current_frame, 0, "Looping animation should wrap to first frame");
+    }
+
+    #[test]
+    fn test_non_looping_animation_stops_at_last_frame() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2],
+            frame_duration: 0.5,
+            current_frame: 2, // At the last frame
+            timer: 0.0,
+            looping: false,
+            playing: true,
+        };
+
+        // Advance past the end
+        advance_animation(&mut anim, 0.5);
+
+        assert_eq!(
+            anim.current_frame, 2,
+            "Non-looping animation should stay on last frame"
+        );
+        assert!(!anim.playing, "Non-looping animation should stop playing");
+    }
+
+    #[test]
+    fn test_paused_animation_does_not_advance() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2],
+            frame_duration: 0.5,
+            current_frame: 0,
+            timer: 0.0,
+            looping: true,
+            playing: false, // Paused
+        };
+
+        advance_animation(&mut anim, 1.0);
+
+        assert_eq!(anim.current_frame, 0, "Paused animation should not advance");
+        assert_eq!(anim.timer, 0.0, "Paused animation timer should not accumulate");
+    }
+
+    #[test]
+    fn test_animation_skips_multiple_frames_with_large_delta() {
+        let mut anim = Animation {
+            frames: vec![0, 1, 2, 3, 4],
+            frame_duration: 0.1,
+            current_frame: 0,
+            timer: 0.0,
+            looping: true,
+            playing: true,
+        };
+
+        // Advance by 3 frame durations at once
+        advance_animation(&mut anim, 0.3);
+
+        assert_eq!(anim.current_frame, 3, "Should advance 3 frames with large delta");
+    }
+}
+```
+
+#### Headless CI Test Gating (Updated)
+
+Use feature flags to gate GPU-dependent tests in CI environments.
+
+```rust
+#[test]
+#[cfg_attr(feature = "headless", ignore)]
+fn test_render_pipeline_initialises() {
+    // This test requires a GPU — skip in headless CI
+    let ctx = MockRenderContext::new_headless();
+    assert!(ctx.is_ok());
+}
+```
+
 ## Examples
 
 ### Complete Test File Example

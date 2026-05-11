@@ -6,18 +6,24 @@ use crate::resources::camera::Camera;
 use crate::resources::asset_manager::AssetManager;
 use crate::resources::audio_manager::AudioManager;
 use crate::core::constants;
+use crate::render::pipeline::RenderPipeline;
+use crate::render::sprite::SpriteBatch;
+use crate::render::ui_render::UIRenderer;
 
-pub struct GameEngine {
+pub struct GameEngine<'window> {
     pub state_manager: GameStateManager,
     pub time: GameTime,
     pub input: InputStateResource,
     pub camera: Camera,
     pub assets: AssetManager,
     pub audio: AudioManager,
+    pub render_pipeline: Option<RenderPipeline<'window>>,
+    pub sprite_batch: SpriteBatch,
+    pub ui_renderer: UIRenderer,
     pub running: bool,
 }
 
-impl GameEngine {
+impl<'window> GameEngine<'window> {
     pub fn new() -> Self {
         Self {
             state_manager: GameStateManager::new(),
@@ -26,6 +32,9 @@ impl GameEngine {
             camera: Camera::new(0.0, 0.0, constants::WINDOW_WIDTH, constants::WINDOW_HEIGHT),
             assets: AssetManager::new(),
             audio: AudioManager::new(),
+            render_pipeline: None,
+            sprite_batch: SpriteBatch::new(),
+            ui_renderer: UIRenderer::new(),
             running: true,
         }
     }
@@ -35,6 +44,10 @@ impl GameEngine {
         self.state_manager.transition_to(GameState::Boot);
         self.register_default_assets();
         log::info!("Game engine initialized");
+    }
+
+    pub fn set_render_pipeline(&mut self, pipeline: RenderPipeline<'window>) {
+        self.render_pipeline = Some(pipeline);
     }
 
     fn register_default_assets(&mut self) {
@@ -50,6 +63,13 @@ impl GameEngine {
             self.assets.register_texture(
                 &format!("enemy_{}", enemy),
                 &format!("assets/sprites/enemy/{}.png", enemy),
+            );
+        }
+        // Tile textures
+        for tile in &["floor", "wall", "water", "grass", "path", "entrance", "exit", "treasure"] {
+            self.assets.register_texture(
+                &format!("tile_{}", tile),
+                &format!("assets/tiles/{}.png", tile),
             );
         }
         // UI assets
@@ -68,7 +88,6 @@ impl GameEngine {
     }
 
     fn audio_manager_update(&mut self) {
-        // Update audio based on current state
         let bgm = match self.state_manager.current() {
             GameState::Title | GameState::Menu => "bgm_menu",
             GameState::Exploring => "bgm_field",
@@ -115,5 +134,11 @@ mod tests {
         let mut engine = GameEngine::new();
         engine.shutdown();
         assert!(!engine.running);
+    }
+
+    #[test]
+    fn test_sprite_batch_in_engine() {
+        let engine = GameEngine::new();
+        assert_eq!(engine.sprite_batch.sprite_count(), 0);
     }
 }

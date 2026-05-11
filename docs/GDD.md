@@ -1,10 +1,38 @@
 # Shambala — Game Design Document
 
-> **Version:** 1.0  
-> **Status:** Draft  
-> **Last Updated:** 2026-05-11  
-> **Engine:** Custom (Rust, ECS, 2D Top-Down)  
+> **Version:** 1.1
+> **Status:** Active Development
+> **Last Updated:** 2026-05-11
+> **Engine:** Custom (Rust, ECS, 2D Top-Down, wgpu)
 > **Platform:** PC (Windows / Linux / macOS)
+
+---
+
+## Development Status
+
+**Current Sprint:** Sprint 2 — Rendering & Game Loop
+**Status:** ✅ Sprint 1 Complete (Core Architecture)
+**Tests:** 125/125 passing
+**Build:** Release binary available (1.2 MB)
+
+### Sprint 1 — Core Architecture (✅ Complete)
+- [x] Project structure & Cargo.toml
+- [x] Core types, constants, game state manager
+- [x] 11 ECS components (Position, Stats, Player, Enemy, Party, DataDrain, Skill, Status, Inventory, Render)
+- [x] 10 game systems (Combat, AI, Physics, Render, Input, Party, DataDrain, AreaGen, UI, Audio)
+- [x] 5 entity factories (Player, Enemy, NPC, Item, Area)
+- [x] 5 resources (Camera, Time, InputState, AssetManager, AudioManager)
+- [x] Game engine, scene manager, event bus
+- [x] 10 integration tests
+- [x] Documentation & skill files
+
+### Sprint 2 — Rendering & Game Loop (🔄 In Progress)
+- [ ] wgpu/winit rendering pipeline
+- [ ] Game loop with window and event handling
+- [ ] Sprite rendering system
+- [ ] Title screen scene
+- [ ] Chaos Gate area transition system
+- [ ] Quest system & dialogue trees
 
 ---
 
@@ -18,6 +46,7 @@
 6. [Audio & Visual Style](#6-audio--visual-style)
 7. [Technical Requirements](#7-technical-requirements)
 8. [Development Roadmap](#8-development-roadmap)
+9. [Lessons Learned (Sprint 1)](#9-lessons-learned-sprint-1)
 
 ---
 
@@ -482,55 +511,73 @@ The UI mimics the aesthetic of an MMO client:
 
 | Layer | Technology | Rationale |
 |---|---|---|
-| **Language** | Rust (edition 2024) | Performance, safety, memory control |
-| **ECS Framework** | Custom (or `bevy_ecs` / `hecs`) | Data-oriented design, cache-friendly |
-| **Rendering** | `wgpu` (Vulkan/DX12/Metal) | Cross-platform, modern GPU API |
-| **Audio** | `kira` or `rodio` | Lightweight, Rust-native audio |
-| **Input** | `winit` + `gilrs` | Window management + gamepad support |
-| **Serialization** | `serde` + `ron` | Save files, config, data assets |
-| **Physics** | `rapier2d` | Collision detection, spatial queries |
-| **Testing** | Built-in `#[test]` + `criterion` | TDD approach, benchmarks |
+| **Language** | Rust (edition 2021) | Performance, safety, memory control |
+| **ECS Framework** | `bevy_ecs` 0.14 (standalone) | Data-oriented design, proven ECS without full Bevy engine |
+| **Rendering** | `wgpu` 22.0 + `pixels` 0.13 | GPU-accelerated 2D via wgpu; pixels for simple pixel-buffer rendering |
+| **Window/Input** | `winit` 0.30 + `gilrs` 0.10 | Window creation, event loop, keyboard/mouse + gamepad support |
+| **Audio** | `rodio` 0.18 | Lightweight, Rust-native audio playback |
+| **Serialization** | `serde` 1.0 + `serde_json` + `ron` 0.8 | Save files, config, data assets |
+| **Physics** | `rapier2d` (planned for Sprint 3) | Collision detection, spatial queries |
+| **Procedural Gen** | `noise` 0.8 + `rand` 0.8 | Area generation, seeded randomization |
+| **Testing** | `#[test]` + `criterion` 0.5 + `proptest` 1.4 + `mockall` 0.13 | TDD approach, benchmarks, property-based testing |
+| **Utilities** | `anyhow`, `thiserror`, `tracing`, `env_logger`, `instant` | Error handling, logging, cross-platform timing |
 
-### 7.2 ECS Architecture
+### 7.2 ECS Architecture (Sprint 1 — Implemented)
 
-The project already follows an ECS (Entity-Component-System) structure:
+The project uses `bevy_ecs` standalone (v0.14) as the ECS core. The architecture is organized into the following module structure:
 
 ```
 src/
-├── main.rs                  # Entry point, game loop
-├── components/              # Data components
+├── main.rs                  # Entry point, CLI args, release mode
+├── lib.rs                   # Library root, public API surface
+├── core/                    # Core types, constants, state management
 │   ├── mod.rs
-│   ├── player.rs            # Player-specific data
-│   ├── enemy.rs             # Enemy AI data
-│   ├── position.rs          # Transform, velocity
-│   ├── health.rs            # HP, SP, status effects
-│   ├── combat.rs            # Attack, defense, skills
-│   ├── party.rs             # Party membership, bond level
-│   ├── data_drain.rs        # Data Drain gauge, corruption
-│   └── render.rs            # Sprite, animation, visibility
-├── entities/                # Entity factories
+│   ├── types.rs             # Shared type aliases, enums, structs
+│   ├── constants.rs         # Game constants (tile size, speeds, limits)
+│   └── game_state.rs        # GameState enum, transition logic
+├── components/              # 11 ECS data components
 │   ├── mod.rs
-│   ├── player.rs            # Spawn player entity
-│   ├── companion.rs         # Spawn companion entities
-│   ├── enemy.rs             # Spawn enemy entities
-│   └── item.rs              # Spawn item/chest entities
-├── resources/               # Global singleton resources
+│   ├── position.rs          # Transform, velocity, DepthLayer
+│   ├── stats.rs             # HP, SP, attack, defense, speed
+│   ├── player.rs            # Player-specific data, class, level
+│   ├── enemy.rs             # Enemy archetype, AI behavior flags
+│   ├── party.rs             # Party membership, bond level, tactics
+│   ├── data_drain.rs        # Data Drain gauge, corruption level
+│   ├── skill.rs             # Skill definitions, cooldowns, SP cost
+│   ├── status.rs            # Status effects, buffs, debuffs
+│   ├── inventory.rs         # Item storage, equipment slots
+│   └── render.rs            # Renderable, Animation, visibility
+├── entities/                # 5 entity factories
 │   ├── mod.rs
-│   ├── game_state.rs        # GameState enum, transition logic
-│   ├── input.rs             # Input mapping, buffered actions
-│   ├── time.rs              # Game clock, delta time
-│   ├── asset_manager.rs     # Texture, audio, font loading
-│   └── world.rs             # Area generation, keyword state
-└── systems/                 # System logic
+│   ├── player.rs            # Spawn player with class defaults
+│   ├── enemy.rs             # Spawn enemies by archetype + level
+│   ├── npc.rs               # Spawn NPC entities
+│   ├── item.rs              # Spawn item pickups, chests
+│   └── area.rs              # Spawn area boundary entities
+├── resources/               # 5 global singleton resources
+│   ├── mod.rs
+│   ├── camera.rs            # Camera transform, zoom, target
+│   ├── time.rs              # Delta time, fixed timestep accumulator
+│   ├── input_state.rs       # Buffered input actions, key mappings
+│   ├── asset_manager.rs     # Texture, audio, font loading handles
+│   └── audio_manager.rs     # Music queue, SFX playback control
+├── systems/                 # 10 game systems
+│   ├── mod.rs
+│   ├── combat.rs            # Damage calculation, skill effects, death
+│   ├── ai.rs                # Enemy behavior, companion tactics
+│   ├── physics.rs           # Movement, velocity, collision response
+│   ├── render.rs            # Draw sprites, animations, visibility culling
+│   ├── input.rs             # Read InputState, dispatch actions
+│   ├── party.rs             # Party follow behavior, formation
+│   ├── data_drain.rs        # Charge, activation, minigame, results
+│   ├── area_gen.rs          # Procedural area generation from keywords
+│   ├── ui.rs                # HUD elements, menus, chat log
+│   └── audio.rs             # Music transitions, SFX triggers
+└── game/                    # Game engine, scene management, events
     ├── mod.rs
-    ├── input.rs             # Read input, dispatch actions
-    ├── movement.rs          # Apply velocity, collision
-    ├── combat.rs            # Damage calculation, skill effects
-    ├── ai.rs                # Companion and enemy AI
-    ├── data_drain.rs        # Data Drain charge, activation, results
-    ├── rendering.rs         # Draw sprites, UI, particles
-    ├── audio.rs             # Play music, SFX
-    └── ui.rs                # HUD, menus, chat log
+    ├── engine.rs            # GameEngine: ECS World, system scheduling
+    ├── scene.rs             # SceneManager: scene stack, transitions
+    └── event.rs             # EventBus: intra-process event dispatch
 ```
 
 ### 7.3 Performance Targets
@@ -555,6 +602,59 @@ src/
 | **Storage** | 500 MB |
 | **Input** | Keyboard + mouse, or gamepad |
 
+### 7.5 Rendering Pipeline Architecture (Sprint 2 Target)
+
+The rendering pipeline is built on `wgpu` for GPU-accelerated 2D rendering with `winit` for window creation and event handling. The architecture follows a layered render-pass model:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    RENDER GRAPH                               │
+│                                                              │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐ │
+│  │  Sprite   │   │ Tilemap  │   │    UI    │   │  Debug   │ │
+│  │  Pass     │──▶│  Pass    │──▶│  Overlay │──▶│  Pass    │ │
+│  │           │   │          │   │   Pass   │   │ (dev)    │ │
+│  └──────────┘   └──────────┘   └──────────┘   └──────────┘ │
+│       │              │              │              │         │
+│       ▼              ▼              ▼              ▼         │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │              wgpu Swap Chain (Present)                │    │
+│  └──────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### Render Passes
+
+| Pass | Priority | Description |
+|---|---|---|
+| **Sprite Pass** | 0 (Bottom) | Renders all entities with `Renderable` and `Position` components. Uses sprite batching for performance — entities sharing the same texture are batched into a single draw call. |
+| **Tilemap Pass** | 1 | Renders the area tilemap from tile data. Supports multiple layers (ground, decoration, overlay) with parallax scrolling. |
+| **UI Overlay Pass** | 2 | Renders HUD elements, menus, chat log, and minimap. Uses a separate orthographic projection that follows screen-space coordinates. |
+| **Debug Pass** | 3 (Optional) | Renders collision boxes, ECS debug info, and performance metrics. Only active in debug builds. |
+
+#### Key Rendering Components
+
+| Component | Role |
+|---|---|
+| `RenderContext` | Owns the wgpu `Device`, `Queue`, `SwapChain`, and `Surface`. Handles window resize events. |
+| `SpriteBatch` | Collects sprites by texture key and issues batched draw calls. Minimizes state changes. |
+| `Camera` resource | Provides view-projection matrix. Supports smooth follow-target interpolation and zoom. |
+| `Renderable` component | Stores texture handle, source rect, tint color, and visibility flag. |
+| `Animation` component | Stores frame indices, frame duration, loop mode, and playback state. |
+
+#### Shader Pipeline
+
+- **Vertex Shader:** Transforms sprite vertices from world space to clip space using the camera uniform buffer
+- **Fragment Shader:** Samples the sprite texture, applies tint color and alpha, outputs to the render target
+- **Shader Language:** WGSL (WebGPU Shading Language) for cross-platform compatibility
+
+#### Performance Considerations
+
+- **Sprite Batching:** Entities with the same texture are batched into a single draw call, reducing CPU-GPU communication overhead
+- **Visibility Culling:** Entities outside the camera frustum are skipped during the sprite pass
+- **Texture Atlas:** All sprites are packed into texture atlases to minimize texture binding changes
+- **Fixed Timestep:** Rendering is decoupled from the update loop using a fixed timestep accumulator, ensuring consistent simulation regardless of frame rate
+
 ---
 
 ## 8. Development Roadmap
@@ -568,85 +668,109 @@ src/
 
 ### 8.2 Milestones
 
-#### Milestone 0 — Project Setup (Sprint 1)
+#### Milestone 0 — Project Setup (Sprint 1 ✅ Complete)
 
-| Task | Description |
-|---|---|
-| Initialize Rust project with Cargo | Done |
-| Set up ECS directory structure | Done |
-| Configure CI pipeline | GitHub Actions, `cargo test`, `cargo clippy` |
-| Set up `wgpu` rendering window | Window creation, clear color |
-| Implement basic game loop | Fixed timestep, delta time |
+| Task | Description | Status |
+|---|---|---|
+| Initialize Rust project with Cargo | Project structure, dependencies, workspace config | ✅ Done |
+| Set up ECS directory structure | components/, systems/, entities/, resources/, core/, game/ | ✅ Done |
+| Implement core types & constants | Type aliases, game constants, shared enums | ✅ Done |
+| Implement game state manager | GameState enum, state transitions | ✅ Done |
+| Implement 11 ECS components | Position, Stats, Player, Enemy, Party, DataDrain, Skill, Status, Inventory, Render | ✅ Done |
+| Implement 10 game systems | Combat, AI, Physics, Render, Input, Party, DataDrain, AreaGen, UI, Audio | ✅ Done |
+| Implement 5 entity factories | Player, Enemy, NPC, Item, Area | ✅ Done |
+| Implement 5 resources | Camera, Time, InputState, AssetManager, AudioManager | ✅ Done |
+| Implement game engine & scene manager | GameEngine, SceneManager, EventBus | ✅ Done |
+| Write 10 integration tests | Combat flow, Data Drain, area generation, party mechanics | ✅ Done |
+| Documentation & skill files | GDD, Technical Design, TDD Guide, 8 skill files | ✅ Done |
+| **Sprint 1 Totals** | **125 tests passing, release binary at 1.2 MB** | **✅ Complete** |
+
+#### Sprint 2 — Rendering & Game Loop (🔄 In Progress)
+
+| Task | Description | Est. Points | Testing |
+|---|---|---|---|
+| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | 8 | Unit: RenderContext creation; Integration: window resize, swapchain rebuild |
+| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | 5 | Unit: timestep accumulator; Integration: frame rate consistency |
+| Sprite rendering system | SpriteBatch, Renderable component rendering, texture atlas support | 8 | Unit: batch sorting, texture binding; Integration: visual output verification |
+| Title screen scene | Scene with logo, Press Start prompt, basic animation | 5 | Unit: scene transitions; Integration: title to game flow |
+| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | 8 | Unit: keyword parsing; Integration: end-to-end area generation flow |
+| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | 8 | Unit: quest state machine, dialogue node traversal; Integration: quest completion flow |
+| **Sprint 2 Totals** | **6 major tasks** | **42 story points** | **12+ new tests** |
 
 #### Milestone 1 — Core Engine (Sprints 2–3)
 
-| Task | Description |
-|---|---|
-| ECS framework integration | Register components, systems, resources |
-| Input system | Keyboard + mouse input, key rebinding |
-| Movement system | Velocity, acceleration, collision with `rapier2d` |
-| Camera system | Follow player, smooth interpolation |
-| Tilemap rendering | Load and render Tiled `.tmx` maps |
-| Sprite animation | Spritesheet loading, frame-based animation |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | Sprint 2 |
+| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | Sprint 2 |
+| Sprite rendering system | SpriteBatch, Renderable component rendering, texture atlas support | Sprint 2 |
+| Title screen scene | Scene with logo, Press Start prompt, basic animation | Sprint 2 |
+| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | Sprint 2 |
+| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | Sprint 2 |
+| Input system | Keyboard + mouse input, key rebinding, action mapping | Sprint 3 |
+| Movement & physics | Velocity, acceleration, collision with rapier2d | Sprint 3 |
+| Camera system | Follow player, smooth interpolation, zoom | Sprint 3 |
+| Tilemap rendering | Load and render Tiled .tmx maps | Sprint 3 |
+| Sprite animation | Spritesheet loading, frame-based animation, state machine | Sprint 3 |
 
 #### Milestone 2 — Player & Combat (Sprints 4–6)
 
-| Task | Description |
-|---|---|
-| Player entity | Spawn, control, animation |
-| Basic combat | Melee attack, damage calculation, HP system |
-| Skill system | Skill definitions, cooldowns, SP cost |
-| All 4 classes | Implement class-specific skills and stats |
-| Enemy AI | Basic behavior tree (patrol, chase, attack) |
-| Party system | Companion spawning, follow behavior, tactics |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| Player entity | Spawn, control, animation | Sprint 4 |
+| Basic combat | Melee attack, damage calculation, HP system | Sprint 4 |
+| Skill system | Skill definitions, cooldowns, SP cost | Sprint 4 |
+| All 4 classes | Implement class-specific skills and stats | Sprint 5 |
+| Enemy AI | Basic behavior tree (patrol, chase, attack) | Sprint 5 |
+| Party system | Companion spawning, follow behavior, tactics | Sprint 6 |
 
 #### Milestone 3 — Data Drain & Areas (Sprints 7–9)
 
-| Task | Description |
-|---|---|
-| Data Drain gauge | Charge from kills, activation UI |
-| Data Drain minigame | Rhythm/timing input, success/failure states |
-| Data Drain results | Virus Cores, Memory Fragments, loot |
-| Area keyword system | Keyword selection UI, procedural generation |
-| Field zone generation | Tilemap generation from templates |
-| Boss encounters | Multi-phase boss AI, Data Drain integration |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| Data Drain gauge | Charge from kills, activation UI | Sprint 7 |
+| Data Drain minigame | Rhythm/timing input, success/failure states | Sprint 7 |
+| Data Drain results | Virus Cores, Memory Fragments, loot | Sprint 7 |
+| Area keyword system | Keyword selection UI, procedural generation | Sprint 8 |
+| Field zone generation | Tilemap generation from templates | Sprint 8 |
+| Boss encounters | Multi-phase boss AI, Data Drain integration | Sprint 9 |
 
 #### Milestone 4 — Story & Content (Sprints 10–14)
 
-| Task | Description |
-|---|---|
-| Mac Anu (Root Town) | Full hub map, NPCs, shops, Chaos Gate |
-| Delta Server | Tutorial area, first 5 field zones |
-| Theta Server | Mid-game zones, first major story beat |
-| Sigma Server | Late-game zones, Memory Fragment lore |
-| Omega Server | Pre-final zones, Kether's influence |
-| Core Server | Final dungeon, boss rush, ending sequence |
-| Dialogue system | Branching dialogue, companion responses |
-| Quest system | Quest tracking, objectives, rewards |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| Mac Anu (Root Town) | Full hub map, NPCs, shops, Chaos Gate | Sprint 10 |
+| Delta Server | Tutorial area, first 5 field zones | Sprint 11 |
+| Theta Server | Mid-game zones, first major story beat | Sprint 12 |
+| Sigma Server | Late-game zones, Memory Fragment lore | Sprint 12 |
+| Omega Server | Pre-final zones, Kether's influence | Sprint 13 |
+| Core Server | Final dungeon, boss rush, ending sequence | Sprint 13 |
+| Dialogue system | Branching dialogue, companion responses | Sprint 11 |
+| Quest system | Quest tracking, objectives, rewards | Sprint 14 |
 
 #### Milestone 5 — UI & Polish (Sprints 15–17)
 
-| Task | Description |
-|---|---|
-| Main menu | Title screen, new game, load, settings |
-| HUD | HP/SP bars, party frames, skill bar, minimap |
-| Menu system | Status, party, items, data, system menus |
-| Chat log | Scrollable log, colored text, mail system |
-| Audio system | Music playback, SFX triggers, volume control |
-| Save/load system | Serialize game state, multiple save slots |
-| Accessibility features | Colorblind mode, text scaling, controller support |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| Main menu | Title screen, new game, load, settings | Sprint 15 |
+| HUD | HP/SP bars, party frames, skill bar, minimap | Sprint 15 |
+| Menu system | Status, party, items, data, system menus | Sprint 15 |
+| Chat log | Scrollable log, colored text, mail system | Sprint 16 |
+| Audio system | Music playback, SFX triggers, volume control | Sprint 16 |
+| Save/load system | Serialize game state, multiple save slots | Sprint 16 |
+| Accessibility features | Colorblind mode, text scaling, controller support | Sprint 17 |
 
 #### Milestone 6 — Testing & Release (Sprints 18–20)
 
-| Task | Description |
-|---|---|
-| Playtesting | Internal QA, bug tracking |
-| Performance optimization | Profiling, asset optimization, draw call batching |
-| Steam integration | Steamworks SDK, achievements, cloud saves |
-| Localization | English (primary), Japanese (secondary) |
-| Build pipeline | Automated builds for Windows, Linux, macOS |
-| Beta release | Closed beta, feedback collection |
-| Launch | v1.0 release on Steam / Itch.io |
+| Task | Description | Est. Sprint |
+|---|---|---|
+| Playtesting | Internal QA, bug tracking | Sprint 18 |
+| Performance optimization | Profiling, asset optimization, draw call batching | Sprint 18 |
+| Steam integration | Steamworks SDK, achievements, cloud saves | Sprint 19 |
+| Localization | English (primary), Japanese (secondary) | Sprint 19 |
+| Build pipeline | Automated builds for Windows, Linux, macOS | Sprint 19 |
+| Beta release | Closed beta, feedback collection | Sprint 20 |
+| Launch | v1.0 release on Steam / Itch.io | Sprint 20 |
 
 ### 8.3 Testing Strategy
 
@@ -661,11 +785,63 @@ src/
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| ECS complexity slows development | High | Start with `bevy_ecs` crate, migrate to custom if needed |
+| ECS complexity slows development | High | Started with bevy_ecs standalone; proven approach |
 | Procedural generation feels repetitive | Medium | Hand-authored templates + seeded randomization |
 | Story quality insufficient | High | Hire narrative designer, iterate on dialogue |
 | Performance issues with 2D lighting | Medium | Use sprite batching, limit light sources |
 | Scope creep | High | Strict sprint planning, MVP-first approach |
+
+---
+
+## 9. Lessons Learned (Sprint 1)
+
+### 9.1 ECS Pattern Works Well for Game Architecture
+
+The Entity-Component-System architecture proved to be an excellent fit for Shambala's gameplay requirements. Separating data (components) from logic (systems) made the codebase easy to reason about and extend. Adding new features during Sprint 1 rarely required modifying existing code — instead, we added new components and systems.
+
+**Key takeaway:** The bevy_ecs standalone crate provides a robust ECS foundation without pulling in the full Bevy engine. This keeps compile times manageable and gives us full control over the rendering pipeline.
+
+### 9.2 TDD Approach Caught Bugs Early
+
+Writing tests before implementation (per the TDD cycle documented in skills/workflows/tdd-cycle.md) caught several edge cases early in development:
+
+- Combat system: Damage calculation with zero or negative values
+- Physics system: Entities moving at extreme velocities (edge cases in collision response)
+- Data Drain system: Gauge overflow and underflow conditions
+- Party system: Bond level calculations at boundary values
+
+**Key takeaway:** The upfront cost of writing tests is offset by significantly reduced debugging time. The 125-test suite provides a safety net that makes refactoring confident and fast.
+
+### 9.3 Integration Tests Essential for Cross-System Verification
+
+Unit tests verified individual systems in isolation, but integration tests (in tests/) were critical for catching issues that only emerged when systems interacted:
+
+- Combat + Data Drain: Data Drain gauge filling correctly when enemies are defeated in combat
+- Party + AI: Companions correctly following tactics during combat encounters
+- Area generation + Physics: Spawned entities having valid positions within generated areas
+- Scene transitions + Game state: Correct state transitions when switching between scenes
+
+**Key takeaway:** Maintain a healthy ratio of integration tests to unit tests (currently ~1:12). Integration tests provide confidence that the system works as a whole, not just in isolation.
+
+### 9.4 Skill Files Help Maintain Consistent Patterns
+
+The 8 skill files created during Sprint 1 (in skills/) served as living documentation for common patterns:
+
+- ecs-patterns.md: Standardized how components, systems, and resources are structured
+- combat-system.md: Ensured consistent damage calculation across all combat interactions
+- area-generation.md: Documented the keyword-based generation pipeline
+- testing-patterns.md: Established conventions for test organization and naming
+
+**Key takeaway:** Skill files reduce cognitive overhead by providing reference implementations. They are especially valuable for onboarding new contributors and maintaining consistency across a growing codebase.
+
+### 9.5 Areas for Improvement in Sprint 2
+
+| Area | Lesson | Action for Sprint 2 |
+|---|---|---|
+| **Error handling** | Some systems use unwrap() where proper error propagation would be safer | Replace unwrap() with thiserror/anyhow patterns across all systems |
+| **Benchmark coverage** | Only 2 benchmark files exist; more needed for rendering | Add render pipeline benchmarks alongside implementation |
+| **Documentation velocity** | Keeping docs in sync with code requires discipline | Update GDD and Technical Design at end of each sprint as a checklist item |
+| **Asset pipeline** | No asset pipeline exists yet; placeholder data used | Define asset format specs and create placeholder sprites in Sprint 2 |
 
 ---
 
@@ -703,5 +879,5 @@ src/
 
 ---
 
-> **Document Status:** Draft v1.0  
-> **Next Steps:** Review with team, refine mechanics, begin Milestone 0 implementation.
+> **Document Status:** Active Development v1.1
+> **Next Steps:** Execute Sprint 2 tasks — implement wgpu/winit rendering pipeline, game loop, sprite rendering, title screen, Chaos Gate transitions, and quest system.

@@ -8,6 +8,15 @@
 
 ---
 
+## Sprint Status
+
+| Sprint | Status | Tests | Build |
+|--------|--------|-------|-------|
+| Sprint 1 — Core Architecture | ✅ Complete | 125/125 | Release binary (1.2 MB) |
+| Sprint 2 — Rendering & Game Loop | 🔄 In Progress | Target: 140+ | Target: Windowed app |
+
+---
+
 ## Table of Contents
 
 1. [Architecture Overview](#1-architecture-overview)
@@ -897,196 +906,53 @@ pub struct Time {
 
 ---
 
-## 3. Rendering Pipeline
+## 3. Rendering Pipeline (Sprint 2)
 
-### 3.1 Overview
+### 3.1 Architecture Overview
+The rendering pipeline uses wgpu (Vulkan/DX12/Metal backend) with winit for window management.
 
-Shambala uses [`wgpu`](https://crates.io/crates/wgpu) (WebGPU implementation) as its graphics API, providing cross-platform Vulkan/DX12/Metal support. The renderer operates in **2D** with a layered architecture.
+### 3.2 Window & Surface Creation
+- winit EventLoop for window events
+- wgpu Surface for rendering
+- Swap chain with vsync
+- Resize handling
 
+### 3.3 Render Pipeline
+- Vertex shader: 2D sprite vertex processing
+- Fragment shader: Texture sampling with alpha blending
+- Uniform buffers: Camera projection matrix
+- Sprite batching: Single draw call for visible sprites
+
+### 3.4 Sprite System
+- Texture atlas for sprite sheets
+- SpriteBatch: Collects visible sprites, sorts by layer, batches by texture
+- Animation system: Frame-based animation with configurable FPS
+- Tilemap rendering: Chunk-based tile rendering for areas
+
+### 3.5 UI Rendering
+- Separate render pass for UI overlay
+- 9-slice scaling for panels
+- Text rendering (bitmap font)
+- Progress bar rendering
+
+### 3.6 Render Graph
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                        wgpu Instance                            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
-│  │  Adapter  │  │  Device   │  │  Queue    │  │  Swap Chain  │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │
-└────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌────────────────────────────────────────────────────────────────┐
-│                       Render Passes                             │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Pass 1: Sprite Batch (Opaque)                             │   │
-│  │   - Tilemap layers                                        │   │
-│  │   - World sprites (enemies, NPCs, objects)                │   │
-│  │   - Sorted by DepthLayer → Texture → Z-order             │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Pass 2: Sprite Batch (Transparent / Additive)             │   │
-│  │   - Particle effects                                      │   │
-│  │   - Light overlays                                        │   │
-│  │   - Transparent entities                                  │   │
-│  │   - Sorted back-to-front by Z                             │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Pass 3: Post-Processing                                   │   │
-│  │   - Screen-space tint (corruption overlay)                │   │
-│  │   - Weather effects (rain, fog, eclipse filter)           │   │
-│  │   - Damage flash                                          │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Pass 4: UI Overlay                                        │   │
-│  │   - HUD elements                                          │   │
-│  │   - Menus                                                 │   │
-│  │   - Dialogue boxes                                        │   │
-│  │   - Minimap                                               │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────┘
+Frame Start
+  ├─ Clear screen (dark blue/black)
+  ├─ Sprite Pass (Background layer)
+  ├─ Sprite Pass (Floor layer)
+  ├─ Sprite Pass (Items layer)
+  ├─ Sprite Pass (Characters layer)
+  ├─ Sprite Pass (Effects layer)
+  ├─ UI Pass (HUD elements)
+  └─ Present to surface
 ```
 
-### 3.2 Sprite Batching
-
-To minimize draw calls, all visible sprites are collected into a **sprite batch** each frame.
-
-```rust
-// Internal batching data structure
-struct SpriteBatch {
-    texture_id: String,
-    instances: Vec<SpriteInstance>,
-}
-
-struct SpriteInstance {
-    position: [f32; 2],        // World position (transformed by camera)
-    size: [f32; 2],            // Output size in pixels
-    source_rect: [f32; 4],     // UV coordinates (x, y, w, h)
-    color: [f32; 4],           // RGBA tint
-    flip: [f32; 2],            // Flip flags packed as 1.0 or -1.0
-}
-
-// Vertex shader input
-struct SpriteVertex {
-    position: [f32; 3],         // Clip-space position
-    uv: [f32; 2],              // Texture coordinates
-    color: [f32; 4],           // Per-instance color
-}
-
-// Instance buffer updated each frame
-// Batch command: indexed draw with instancing
-// Max instances per batch: 1024 (falls back to multiple draw calls)
-```
-
-**Batching algorithm:**
-
-1. Query all entities with `(Position, Renderable, DepthLayer)` and optional `Animation`
-2. Sort by `DepthLayer` (ascending) → `texture_id` → z-order
-3. Group consecutive sprites sharing the same `texture_id` into batches
-4. For each batch, fill an instance buffer and issue one draw call
-5. Tilemaps use their own dedicated batch (single large mesh)
-
-### 3.3 Tilemap Rendering
-
-Tilemaps are rendered as a **single mesh** using the GPU for efficient rendering.
-
-```rust
-struct TilemapRenderer {
-    vertex_buffer: wgpu::Buffer,
-    index_buffer: wgpu::Buffer,
-    index_count: u32,
-    texture_bind_group: wgpu::BindGroup,
-    tileset_size: (u32, u32),       // Columns and rows in spritesheet
-    tile_size: (f32, f32),          // Pixel dimensions of one tile
-    map_size: (u32, u32),           // Tile grid dimensions
-}
-
-// Tile vertex format
-struct TileVertex {
-    position: [f32; 3],             // World position
-    uv: [f32; 2],                   // Tileset UV
-}
-
-// The tilemap mesh is built once (or on area load).
-// Each tile = 2 triangles (6 indices), 4 vertices.
-// Total vertices = map_width * map_height * 4.
-// Tile animation (water/lava) updates UVs incrementally.
-```
-
-**Tilemap layers:**
-
-| Layer | Content | Blend Mode |
-|---|---|---|
-| Layer 0 (Base) | Ground, paths, water | Opaque |
-| Layer 1 (Floor Details) | Grass, stones, decoration | Opaque |
-| Layer 2 (Objects) | Walls, trees, chests | Opaque |
-| Layer 3 (Overlay) | Shadows, foliage tops | Transparent |
-
-### 3.4 UI Rendering
-
-UI is rendered in a separate orthographic pass on top of the game world.
-
-```rust
-struct UIRenderer {
-    // Uses wgpu_glyph or a custom atlas-based text renderer
-    text_renderer: TextRenderer,
-    // UI elements are positioned in screen-space coordinates
-    elements: Vec<UIElement>,
-}
-
-struct UIElement {
-    element_type: UIType,
-    position: (f32, f32),      // Screen-space
-    size: (f32, f32),
-    texture_id: Option<String>,
-    color: [f32; 4],
-    text: Option<String>,
-    font_size: f32,
-    interactable: bool,
-    clip_rect: Option<(f32, f32, f32, f32)>,  // Scissor rect
-}
-
-enum UIType {
-    Panel,
-    Button,
-    Label,
-    ProgressBar,
-    Icon,
-    TextInput,
-    ScrollContainer,
-}
-```
-
-**UI rendering order:**
-
-```
-Z-0: Background panels / frames
-Z-1: Progress bars (HP, SP, Data Drain)
-Z-2: Icons (skill bar, inventory slots)
-Z-3: Text labels
-Z-4: Tooltips / hover overlays
-Z-5: Modal dialogs (on top of everything)
-```
-
-### 3.5 Camera System
-
-```rust
-// Camera transformation
-// World-to-screen matrix:
-//   screen_pos = (world_pos - camera_pos) * zoom + (viewport_center)
-
-// Smooth follow interpolation:
-//   camera_pos += (target_pos - camera_pos) * lerp_speed * dt
-
-// Camera shake:
-//   offset = random_offset * intensity * decay_factor
-//   Applied after follow calculation
-
-// Zoom levels:
-//   1.0x = Default
-//   2.0x = Zoomed in (cutscene/dialogue)
-//   0.5x = Zoomed out (overview/minimap)
-```
+### 3.7 Performance Targets
+- 60 FPS at 1280x720
+- < 1000 draw calls per frame
+- < 16ms frame time
+- < 256 MB GPU memory
 
 ---
 
@@ -1534,13 +1400,15 @@ shambala/
 │   │
 │   ├── render/                          # Rendering internals (wgpu)
 │   │   ├── mod.rs                       # Renderer struct, initialization
-│   │   ├── pipeline.rs                  # wgpu pipeline layouts, shader modules
-│   │   ├── sprite_batch.rs              # SpriteBatcher — instance buffer management
-│   │   ├── tilemap_renderer.rs          # TilemapRenderer — mesh building, rendering
-│   │   ├── ui_renderer.rs               # UIRenderer — text layout, UI geometry
-│   │   ├── post_process.rs              # PostProcessPass — screen-space effects
-│   │   ├── texture.rs                   # Texture loading, atlas management
-│   │   └── camera_uniform.rs            # Camera uniform buffer for shaders
+│   │   ├── pipeline.rs                  # wgpu pipeline setup
+│   │   ├── sprite.rs                    # Sprite batching & rendering
+│   │   ├── tilemap.rs                   # Tilemap rendering
+│   │   ├── ui_render.rs                 # UI overlay rendering
+│   │   ├── text.rs                      # Text rendering
+│   │   └── shaders/                     # WGSL shader files
+│   │       ├── sprite.wgsl
+│   │       ├── tilemap.wgsl
+│   │       └── ui.wgsl
 │   │
 │   ├── physics/                         # Physics abstractions
 │   │   ├── mod.rs                       # PhysicsWorld wrapper
@@ -2601,13 +2469,13 @@ bevy_ecs = { version = "0.14", features = ["bevy_reflect"] }
 # Alternative: hecs = "0.11" (lighter weight, if bevy_ecs is too heavy)
 
 # ── Graphics & Rendering ──
-wgpu = "24.0"                         # Modern GPU abstraction (Vulkan/DX12/Metal)
-wgpu-glyph = "0.25"                   # Fast text rendering on wgpu
+wgpu = "22.0"                         # Modern GPU abstraction (Vulkan/DX12/Metal)
+winit = "0.30"                        # Window creation, event loop
+pixels = "0.13"                       # Pixel buffer for 2D rendering
 image = "0.25"                        # Image loading (PNG, JPEG)
 guillotiere = "0.6"                   # Texture atlas packing
 
 # ── Windowing & Input ──
-winit = "0.30"                        # Window creation, event loop
 gilrs = "0.10"                        # Gamepad input
 
 # ── Physics ──
@@ -2758,5 +2626,50 @@ The `edition = "2024"` in `Cargo.toml` indicates the project uses the Rust 2024 
 
 ---
 
-> **Document Status:** Draft v1.0  
-> **Next Steps:** Review with engineering team, finalize dependency versions, begin Milestone 0 implementation.
+> **Document Status:** Draft v1.0
+> **Next Steps:** Sprint 2 implementation in progress — rendering pipeline, game loop, title screen, area transitions, quest system.
+
+---
+
+## 14. Sprint 2 Implementation Plan
+
+### Task 2.1: wgpu/winit Setup (8 SP)
+- Create render module structure
+- Implement window creation with winit
+- Set up wgpu instance, surface, device, queue
+- Create swap chain and render pipeline
+- Tests: Window creation, pipeline compilation
+
+### Task 2.2: Game Loop (5 SP)
+- Implement event loop with winit
+- Frame timing with fixed timestep
+- Input event handling
+- Resize handling
+- Tests: Frame timing, input processing
+
+### Task 2.3: Sprite Rendering (8 SP)
+- Implement SpriteBatch
+- Texture loading and atlas management
+- Layer-based sorting and rendering
+- Animation system
+- Tests: Sprite batching, layer sorting, animation
+
+### Task 2.4: Title Screen (5 SP)
+- Title screen scene
+- Menu options (New Game, Continue, Options, Quit)
+- Basic UI rendering
+- Tests: Menu navigation
+
+### Task 2.5: Chaos Gate (8 SP)
+- Area transition system
+- Keyword selection UI
+- Area generation on transition
+- Loading screen
+- Tests: Area transitions, keyword validation
+
+### Task 2.6: Quest System & Dialogue (8 SP)
+- Quest data structures
+- Quest tracking and progression
+- Dialogue trees
+- NPC interaction
+- Tests: Quest lifecycle, dialogue flow

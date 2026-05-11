@@ -1,10 +1,17 @@
 # Shambala — Test-Driven Development Guide
 
-> **Version:** 1.0
-> **Status:** Final
+> **Version:** 1.1
+> **Status:** Active Development — Sprint 2
 > **Last Updated:** 2026-05-11
 > **Engine:** Custom (Rust, ECS, 2D Top-Down)
 > **Testing Framework:** `cargo test` + `proptest` + `criterion`
+
+## Sprint Status
+
+| Sprint | Focus | Tests | Status |
+|--------|-------|-------|--------|
+| Sprint 1 | Core Architecture | 125 (115 unit + 10 integration) | ✅ Complete |
+| Sprint 2 | Rendering & Game Loop | Target: 140+ | 🔄 In Progress |
 
 ---
 
@@ -1275,6 +1282,39 @@ fn test_damage_minimum_when_attack_is_zero() {
 
 ---
 
+## Sprint 2 Testing Strategy
+
+### Rendering Pipeline Tests
+- Pipeline creation: Test that wgpu device/queue/surface are created
+- Shader compilation: Test that WGSL shaders compile without errors
+- Sprite batching: Test that sprites are correctly batched by texture
+- Layer sorting: Test that render layers sort correctly
+- Viewport culling: Test that off-screen sprites are culled
+
+### Game Loop Tests
+- Frame timing: Test that delta time is calculated correctly
+- Fixed timestep: Test that fixed update runs at correct intervals
+- Input processing: Test that winit events map to InputActions
+- Resize handling: Test that window resize triggers pipeline rebuild
+
+### Title Screen Tests
+- Menu navigation: Test that menu options are selectable
+- State transitions: Test that New Game transitions to CharacterSelect
+- UI rendering: Test that UI elements render at correct positions
+
+### Chaos Gate Tests
+- Keyword validation: Test that valid/invalid keywords are handled
+- Area generation: Test that Chaos Gate triggers area generation
+- Loading screen: Test that loading state is shown during transition
+
+### Quest System Tests
+- Quest creation: Test that quests can be created with objectives
+- Quest progression: Test that objectives update correctly
+- Quest completion: Test that completed quests trigger rewards
+- Dialogue trees: Test that dialogue nodes navigate correctly
+
+---
+
 ## 6. Test Organization
 
 ### 6.1 Complete Directory Structure
@@ -1306,14 +1346,19 @@ shambala/
 │
 ├── tests/
 │   ├── integration/
-│   │   ├── combat_tests.rs          # Full combat scenarios
-│   │   ├── area_generation_tests.rs # Area gen scenarios
-│   │   ├── data_drain_tests.rs      # Data Drain complete cycle
-│   │   ├── party_tests.rs           # Party mechanics
-│   │   ├── physics_tests.rs         # Movement & collision
-│   │   ├── save_load_tests.rs       # Save/load round-trip
-│   │   ├── game_state_tests.rs      # State machine transitions
-│   │   └── network_tests.rs         # Server-client event flow
+│   │   ├── combat_tests.rs          # Sprint 1 — Full combat scenarios
+│   │   ├── area_generation_tests.rs # Sprint 1 — Area gen scenarios
+│   │   ├── data_drain_tests.rs      # Sprint 1 — Data Drain complete cycle
+│   │   ├── party_tests.rs           # Sprint 1 — Party mechanics
+│   │   ├── physics_tests.rs         # Sprint 1 — Movement & collision
+│   │   ├── save_load_tests.rs       # Sprint 1 — Save/load round-trip
+│   │   ├── game_state_tests.rs      # Sprint 1 — State machine transitions
+│   │   ├── network_tests.rs         # Sprint 1 — Server-client event flow
+│   │   ├── rendering_tests.rs       # Sprint 2 — wgpu pipeline & sprite rendering
+│   │   ├── game_loop_tests.rs       # Sprint 2 — winit event loop & frame timing
+│   │   ├── title_screen_tests.rs    # Sprint 2 — Menu navigation & state transitions
+│   │   ├── chaos_gate_tests.rs      # Sprint 2 — Keyword validation & area transitions
+│   │   └── quest_tests.rs           # Sprint 2 — Quest creation, progression & dialogue
 │   │
 │   ├── property/
 │   │   ├── combat_properties.rs     # Damage formula invariants
@@ -2817,6 +2862,65 @@ feat(procgen): implement AreaGenerator with noise-based terrain
 - 7 unit tests covering dimensions, determinism, and connectivity
 ```
 
+### Example 5: TDD for wgpu Pipeline Setup
+
+**Feature:** Set up a wgpu rendering pipeline with device, queue, and surface creation.
+
+#### 🔴 RED — Write a test for pipeline creation
+
+```rust
+#[test]
+fn test_render_pipeline_creation() {
+    let pipeline = RenderPipeline::new();
+    assert!(pipeline.device.is_some());
+    assert!(pipeline.queue.is_some());
+}
+```
+
+#### 🟢 GREEN — Implement minimum code
+
+```rust
+pub struct RenderPipeline {
+    pub device: Option<wgpu::Device>,
+    pub queue: Option<wgpu::Queue>,
+}
+
+impl RenderPipeline {
+    pub fn new() -> Self {
+        // Minimum implementation
+        Self { device: None, queue: None }
+    }
+}
+```
+
+#### 🔵 REFACTOR — Improve with actual wgpu initialization
+
+```rust
+impl RenderPipeline {
+    pub async fn new() -> Self {
+        let instance = wgpu::Instance::default();
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions::default())
+            .await
+            .expect("Failed to request adapter");
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor::default(), None)
+            .await
+            .expect("Failed to request device");
+
+        Self {
+            device: Some(device),
+            queue: Some(queue),
+        }
+    }
+}
+```
+
+**Commit:**
+```
+feat(render): implement wgpu pipeline setup with device and queue
+```
+
 ---
 
 ## 10. Coverage Goals
@@ -3236,6 +3340,20 @@ abc1213 test(data_drain): add gauge charge and activation tests
 
 This makes code review easier: reviewers can see the tests first, then verify the implementation.
 
+### 12.7 Sprint 2 Commit Examples
+
+Use these commit patterns for Sprint 2 features:
+
+```
+feat(render): implement wgpu pipeline setup
+feat(render): add sprite batching system
+feat(render): implement tilemap rendering
+feat(game-loop): add winit event loop
+feat(ui): create title screen scene
+feat(chaos-gate): implement area transition system
+feat(quest): add quest tracking system
+```
+
 ### 12.6 Commit Hooks
 
 Install a commit-msg hook to enforce conventional commits:
@@ -3307,5 +3425,5 @@ cargo watch -x tdd     # Auto-run tests on file change
 
 ---
 
-> **Document Status:** v1.0
-> **Next Steps:** Review with team, set up CI pipeline, begin Milestone 0 test-first implementation.
+> **Document Status:** v1.1
+> **Next Steps:** Sprint 2 in progress — rendering pipeline, game loop, title screen, Chaos Gate, quest system.
