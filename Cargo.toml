@@ -1,6 +1,59 @@
 [package]
 name = "shambala"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+# ECS (using bevy_ecs standalone, NOT the full bevy engine)
+bevy_ecs = "0.14"
+bevy_app = "0.14"
+bevy_math = "0.14"
+
+# Rendering (we'll use wgpu directly for learning purposes)
+wgpu = "22.0"
+winit = "0.30"
+pixels = "0.13"  # Simple pixel buffer rendering for 2D
+
+# Input
+gilrs = "0.10"  # Gamepad support
+
+# Audio
+rodio = "0.18"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ron = "0.8"
+
+# Procedural generation
+noise = "0.8"
+rand = "0.8"
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.11"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Timing
+instant = "0.1"
+
+[dev-dependencies]
+proptest = "1.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+mockall = "0.13"
+
+[[bench]]
+name = "render_benchmarks"
+harness = false
+
+[[bench]]
+name = "physics_benchmarks"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
