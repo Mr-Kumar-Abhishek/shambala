@@ -1,7 +1,7 @@
 # Shambala — Test-Driven Development Guide
 
 > **Version:** 1.1
-> **Status:** Active Development — Sprint 2
+> **Status:** Active Development — Sprint 3
 > **Last Updated:** 2026-05-11
 > **Engine:** Custom (Rust, ECS, 2D Top-Down)
 > **Testing Framework:** `cargo test` + `proptest` + `criterion`
@@ -11,7 +11,8 @@
 | Sprint | Focus | Tests | Status |
 |--------|-------|-------|--------|
 | Sprint 1 | Core Architecture | 125 (115 unit + 10 integration) | ✅ Complete |
-| Sprint 2 | Rendering & Game Loop | Target: 140+ | 🔄 In Progress |
+| Sprint 2 | Rendering & Game Loop | 180 (165 unit + 15 integration) | ✅ Complete |
+| Sprint 3 | Assets, Audio & Polish | Target: 220+ | 🔄 In Progress |
 
 ---
 
@@ -1312,6 +1313,46 @@ fn test_damage_minimum_when_attack_is_zero() {
 - Quest progression: Test that objectives update correctly
 - Quest completion: Test that completed quests trigger rewards
 - Dialogue trees: Test that dialogue nodes navigate correctly
+
+---
+
+## Sprint 3 Testing Strategy
+
+### Asset Pipeline Tests
+- Texture loading: Test PNG loading and wgpu texture creation
+- Atlas packing: Test sprite packing into texture atlas
+- Cache management: Test cache hit/miss behavior
+- Async loading: Test loading progress tracking
+
+### Audio System Tests
+- Playback: Test BGM and SFX playback
+- Volume control: Test master/bgm/sfx volume sliders
+- Mute toggle: Test mute/unmute state
+- Spatial audio: Test distance-based volume falloff
+
+### Character Select Tests
+- Class selection: Test cycling through 4 classes
+- Stats display: Test stat values update per class
+- Name input: Test name validation (length, characters)
+- State transition: Test confirm moves to Exploring state
+
+### Combat Visualization Tests
+- Animation timing: Test frame-based animation playback
+- Damage numbers: Test damage popup positioning and fade
+- HP bar animation: Test smooth HP bar transitions
+- Screen shake: Test shake intensity and duration
+
+### Save/Load Tests
+- Serialization: Test game state roundtrip
+- File management: Test save file creation and deletion
+- Auto-save: Test automatic save on area transitions
+- Error handling: Test corrupted save file recovery
+
+### Network Layer Tests
+- Connection states: Test CONNECTING/CONNECTED/DISCONNECTED
+- Message routing: Test event dispatch to correct handlers
+- Latency simulation: Test delayed message delivery
+- Reconnection: Test auto-reconnect logic
 
 ---
 
@@ -3426,4 +3467,4 @@ cargo watch -x tdd     # Auto-run tests on file change
 ---
 
 > **Document Status:** v1.1
-> **Next Steps:** Sprint 2 in progress — rendering pipeline, game loop, title screen, Chaos Gate, quest system.
+> **Next Steps:** Sprint 3 in progress — asset pipeline, audio system, character select, combat visualization, save/load, network layer.

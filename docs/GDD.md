@@ -1,6 +1,6 @@
 # Shambala — Game Design Document
 
-> **Version:** 1.1
+> **Version:** 0.3.0 (Game) | Doc v1.2
 > **Status:** Active Development
 > **Last Updated:** 2026-05-11
 > **Engine:** Custom (Rust, ECS, 2D Top-Down, wgpu)
@@ -10,9 +10,9 @@
 
 ## Development Status
 
-**Current Sprint:** Sprint 2 — Rendering & Game Loop
-**Status:** ✅ Sprint 1 Complete (Core Architecture)
-**Tests:** 125/125 passing
+**Current Sprint:** Sprint 3 — Assets, Audio & Polish
+**Status:** ✅ Sprint 1 Complete (Core Architecture) | ✅ Sprint 2 Complete (Rendering & Game Loop)
+**Tests:** 180/180 passing
 **Build:** Release binary available (1.2 MB)
 
 ### Sprint 1 — Core Architecture (✅ Complete)
@@ -26,13 +26,23 @@
 - [x] 10 integration tests
 - [x] Documentation & skill files
 
-### Sprint 2 — Rendering & Game Loop (🔄 In Progress)
-- [ ] wgpu/winit rendering pipeline
-- [ ] Game loop with window and event handling
-- [ ] Sprite rendering system
-- [ ] Title screen scene
-- [ ] Chaos Gate area transition system
-- [ ] Quest system & dialogue trees
+### Sprint 2 — Rendering & Game Loop (✅ Complete)
+- [x] wgpu/winit rendering pipeline
+- [x] Game loop with window and event handling
+- [x] Sprite batching, tilemap, UI, text rendering
+- [x] Title screen with menu navigation
+- [x] Chaos Gate area transition system
+- [x] Quest system & dialogue trees
+- [x] 180 tests passing
+
+### Sprint 3 — Assets, Audio & Polish (🔄 In Progress)
+- [ ] Asset pipeline (image loading, texture management)
+- [ ] Audio system with rodio
+- [ ] Character select screen
+- [ ] Combat visualization (animations, effects)
+- [ ] Save/load system (serde/ron)
+- [ ] Simulated network layer
+- [ ] Target: 220+ tests
 
 ---
 
@@ -685,33 +695,34 @@ The rendering pipeline is built on `wgpu` for GPU-accelerated 2D rendering with 
 | Documentation & skill files | GDD, Technical Design, TDD Guide, 8 skill files | ✅ Done |
 | **Sprint 1 Totals** | **125 tests passing, release binary at 1.2 MB** | **✅ Complete** |
 
-#### Sprint 2 — Rendering & Game Loop (🔄 In Progress)
+#### Sprint 2 — Rendering & Game Loop (✅ Complete)
 
-| Task | Description | Est. Points | Testing |
-|---|---|---|---|
-| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | 8 | Unit: RenderContext creation; Integration: window resize, swapchain rebuild |
-| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | 5 | Unit: timestep accumulator; Integration: frame rate consistency |
-| Sprite rendering system | SpriteBatch, Renderable component rendering, texture atlas support | 8 | Unit: batch sorting, texture binding; Integration: visual output verification |
-| Title screen scene | Scene with logo, Press Start prompt, basic animation | 5 | Unit: scene transitions; Integration: title to game flow |
-| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | 8 | Unit: keyword parsing; Integration: end-to-end area generation flow |
-| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | 8 | Unit: quest state machine, dialogue node traversal; Integration: quest completion flow |
-| **Sprint 2 Totals** | **6 major tasks** | **42 story points** | **12+ new tests** |
+| Task | Description | Est. Points | Testing | Result |
+|---|---|---|---|---|
+| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | 8 | Unit: RenderContext creation; Integration: window resize, swapchain rebuild | ✅ Done |
+| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | 5 | Unit: timestep accumulator; Integration: frame rate consistency | ✅ Done |
+| Sprite batching, tilemap, UI, text rendering | SpriteBatch, Renderable component rendering, texture atlas, tilemap passes, UI overlay, text glyph rendering | 8 | Unit: batch sorting, texture binding; Integration: visual output verification | ✅ Done |
+| Title screen with menu navigation | Scene with logo, Press Start prompt, menu navigation, scene transitions | 5 | Unit: scene transitions; Integration: title to game flow | ✅ Done |
+| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | 8 | Unit: keyword parsing; Integration: end-to-end area generation flow | ✅ Done |
+| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | 8 | Unit: quest state machine, dialogue node traversal; Integration: quest completion flow | ✅ Done |
+| **Sprint 2 Totals** | **6 major tasks** | **42 story points** | **12+ new tests** | **180 tests passing** |
 
 #### Milestone 1 — Core Engine (Sprints 2–3)
 
-| Task | Description | Est. Sprint |
-|---|---|---|
-| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | Sprint 2 |
-| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | Sprint 2 |
-| Sprite rendering system | SpriteBatch, Renderable component rendering, texture atlas support | Sprint 2 |
-| Title screen scene | Scene with logo, Press Start prompt, basic animation | Sprint 2 |
-| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | Sprint 2 |
-| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | Sprint 2 |
-| Input system | Keyboard + mouse input, key rebinding, action mapping | Sprint 3 |
-| Movement & physics | Velocity, acceleration, collision with rapier2d | Sprint 3 |
-| Camera system | Follow player, smooth interpolation, zoom | Sprint 3 |
-| Tilemap rendering | Load and render Tiled .tmx maps | Sprint 3 |
-| Sprite animation | Spritesheet loading, frame-based animation, state machine | Sprint 3 |
+| Task | Description | Est. Sprint | Status |
+|---|---|---|---|
+| wgpu/winit rendering pipeline | Initialize wgpu device/queue/swapchain, winit window + event loop | Sprint 2 | ✅ Done |
+| Game loop with fixed timestep | Frame scheduling, input to update to render phases, delta time | Sprint 2 | ✅ Done |
+| Sprite batching, tilemap, UI, text rendering | SpriteBatch, Renderable component rendering, texture atlas, tilemap passes, UI overlay, text glyph rendering | Sprint 2 | ✅ Done |
+| Title screen with menu navigation | Scene with logo, Press Start prompt, menu navigation, scene transitions | Sprint 2 | ✅ Done |
+| Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | Sprint 2 | ✅ Done |
+| Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | Sprint 2 | ✅ Done |
+| Asset pipeline | Image loading, texture management, atlas packing | Sprint 3 | 🔄 In Progress |
+| Audio system with rodio | Music playback, SFX triggers, volume control, spatial audio | Sprint 3 | 🔄 In Progress |
+| Character select screen | Class selection, appearance customization, party composition | Sprint 3 | 🔄 In Progress |
+| Combat visualization | Animation playback, hit effects, damage numbers, status indicators | Sprint 3 | 🔄 In Progress |
+| Save/load system | Serialize game state with serde/ron, multiple save slots | Sprint 3 | 🔄 In Progress |
+| Simulated network layer | Fake MMO server communication, party sync, area transitions | Sprint 3 | 🔄 In Progress |
 
 #### Milestone 2 — Player & Combat (Sprints 4–6)
 
@@ -845,6 +856,42 @@ The 8 skill files created during Sprint 1 (in skills/) served as living document
 
 ---
 
+## 10. Lessons Learned (Sprint 2)
+
+### 10.1 wgpu Pipeline Setup Requires Careful Async Handling
+
+Initializing wgpu's `Device`, `Queue`, `Surface`, and `SwapChain` involves asynchronous operations that must be carefully sequenced. The `pollster` crate was used to block on futures during initialization, but this approach requires the winit event loop to be configured correctly to avoid deadlocks. Surface configuration must also handle window resize events gracefully, recreating the swapchain with updated dimensions.
+
+**Key takeaway:** Use `pollster::block_on` for wgpu initialization outside the event loop, and listen for winit `Resized` events to trigger swapchain recreation. Always validate surface capabilities against the adapter before configuring.
+
+### 10.2 Sprite Batching Significantly Reduces Draw Calls
+
+The initial naive rendering approach issued one draw call per sprite, which quickly became a bottleneck. Implementing `SpriteBatch` — which groups sprites by texture key and issues a single instanced draw call per batch — reduced draw calls by over 90% in scenes with 100+ sprites. The batch is sorted by texture handle to minimize pipeline state changes.
+
+**Key takeaway:** Always batch sprites by texture. Use a texture atlas to maximize the number of sprites that share a texture, and sort batches by texture handle to minimize GPU state changes.
+
+### 10.3 winit Event Loop Patterns for Game Development
+
+winit's event loop (`EventLoop::run`) follows a callback-based model that differs from traditional game loops. The game's fixed-timestep update loop must be integrated within the `MainEventsCleared` and `RedrawRequested` events. Input events are buffered in `InputState` resource during the event phase and consumed during the update phase, ensuring consistent input handling regardless of frame rate.
+
+**Key takeaway:** Buffer raw winit events into a resource during the event phase, then process them during the update phase. Use `RedrawRequested` for rendering and `MainEventsCleared` for updates to maintain a clean separation between input, update, and render.
+
+### 10.4 Quest System Benefits from Data-Driven Design
+
+The quest system was initially implemented with hardcoded quest logic in Rust, which made iteration slow and required recompilation for every quest change. Migrating to a data-driven approach — where quest definitions, dialogue trees, and reward tables are defined in RON files loaded at runtime — dramatically improved iteration speed. Quest state machines (inactive → active → completed → rewarded) are driven by event triggers rather than polling.
+
+**Key takeaway:** Define quest data in external RON files rather than hardcoding in Rust. Use an event-driven state machine for quest progression, and separate quest definitions from quest logic to enable rapid content iteration.
+
+### 10.5 Areas for Improvement in Sprint 3
+
+| Area | Lesson | Action for Sprint 3 |
+|---|---|---|
+| **Asset management** | No formal asset pipeline exists; textures are loaded ad-hoc | Implement AssetManager with caching, reference counting, and async loading |
+| **Audio integration** | Audio system stubs exist but no actual playback | Integrate rodio for music and SFX with volume control and crossfade support |
+| **Save/load** | No persistence layer for game state | Implement serde/ron serialization for player data, quest progress, and settings |
+| **Network simulation** | Single-player only; no MMO feel in party interactions | Build a simulated network layer that mimics server communication for party sync and area transitions |
+| **Test coverage** | 180 tests passing; need 40+ more for Sprint 3 target | Add tests for asset loading, audio playback, save/load round-trips, and network simulation |
+
 ## Appendix A: Glossary
 
 | Term | Definition |
@@ -879,5 +926,5 @@ The 8 skill files created during Sprint 1 (in skills/) served as living document
 
 ---
 
-> **Document Status:** Active Development v1.1
-> **Next Steps:** Execute Sprint 2 tasks — implement wgpu/winit rendering pipeline, game loop, sprite rendering, title screen, Chaos Gate transitions, and quest system.
+> **Document Status:** Active Development v1.2
+> **Next Steps:** Execute Sprint 3 tasks — implement asset pipeline, audio system with rodio, character select screen, combat visualization, save/load system, and simulated network layer.

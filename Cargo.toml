@@ -1,6 +1,6 @@
 [package]
 name = "shambala"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
@@ -12,6 +12,7 @@ bevy_math = "0.14"
 # Rendering
 wgpu = "22.0"
 winit = "0.30"
+bytemuck = { version = "1.16", features = ["derive"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -29,13 +30,15 @@ log = "0.4"
 env_logger = "0.11"
 tracing = "0.1"
 tracing-subscriber = "0.3"
-bytemuck = { version = "1.0", features = ["derive"] }
 
 # Timing
 instant = "0.1"
 
 # Image loading
 image = "0.25"
+
+# Audio
+rodio = "0.20"
 
 [dev-dependencies]
 proptest = "1.4"

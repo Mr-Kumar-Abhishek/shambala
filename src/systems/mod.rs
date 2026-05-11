@@ -8,3 +8,4 @@ pub mod data_drain;
 pub mod area_gen;
 pub mod ui;
 pub mod audio;
+pub mod audio_playback;

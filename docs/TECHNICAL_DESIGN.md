@@ -10,10 +10,11 @@
 
 ## Sprint Status
 
-| Sprint | Status | Tests | Build |
-|--------|--------|-------|-------|
-| Sprint 1 — Core Architecture | ✅ Complete | 125/125 | Release binary (1.2 MB) |
-| Sprint 2 — Rendering & Game Loop | 🔄 In Progress | Target: 140+ | Target: Windowed app |
+| Sprint | Focus | Tests | Build | Status |
+|--------|-------|-------|-------|--------|
+| Sprint 1 | Core Architecture | 125 | Release binary (1.2 MB) | ✅ Complete |
+| Sprint 2 | Rendering & Game Loop | 180 | Windowed app (wgpu/winit) | ✅ Complete |
+| Sprint 3 | Assets, Audio & Polish | Target: 220+ | Full game features | 🔄 In Progress |
 
 ---
 
@@ -953,6 +954,13 @@ Frame Start
 - < 1000 draw calls per frame
 - < 16ms frame time
 - < 256 MB GPU memory
+
+### 3.8 Texture Loading Pipeline
+- Load PNG via `image` crate
+- Convert to `wgpu::Texture` with mipmaps
+- Create `wgpu::Sampler` with bilinear filtering
+- Texture atlas packing for sprite sheets
+- Async loading with progress tracking
 
 ---
 
@@ -2484,6 +2492,7 @@ parry2d = "0.23"                      # 2D collision detection (rapier's math cr
 
 # ── Audio ──
 kira = { version = "0.10", features = ["ogg"] }      # Audio playback with OGG support
+rodio = "0.20"                                        # Alternative audio playback (Sprint 3)
 
 # ── Serialization & Data ──
 serde = { version = "1.0", features = ["derive"] }
@@ -2627,7 +2636,7 @@ The `edition = "2024"` in `Cargo.toml` indicates the project uses the Rust 2024 
 ---
 
 > **Document Status:** Draft v1.0
-> **Next Steps:** Sprint 2 implementation in progress — rendering pipeline, game loop, title screen, area transitions, quest system.
+> **Next Steps:** Sprint 3 implementation in progress — asset pipeline, audio system, character select, combat visualization, save/load, simulated network layer.
 
 ---
 
@@ -2673,3 +2682,50 @@ The `edition = "2024"` in `Cargo.toml` indicates the project uses the Rust 2024 
 - Dialogue trees
 - NPC interaction
 - Tests: Quest lifecycle, dialogue flow
+
+---
+
+## 15. Sprint 3 Implementation Plan
+
+### Task 3.1: Asset Pipeline (8 SP)
+- Implement texture loading from PNG files using `image` crate
+- Create texture atlas management system
+- Implement async asset loading with progress tracking
+- Add asset caching and hot-reloading support
+- Tests: Texture loading, atlas packing, cache hit/miss
+
+### Task 3.2: Audio System (5 SP)
+- Implement rodio-based audio playback
+- BGM streaming with crossfade support
+- SFX playback with spatial audio
+- Volume control per audio type
+- Tests: Audio playback, volume control, mute toggle
+
+### Task 3.3: Character Select Screen (5 SP)
+- Class selection UI with 4 classes
+- Character preview with stats display
+- Name input field
+- Confirm/cancel navigation
+- Tests: Class selection, name validation, state transitions
+
+### Task 3.4: Combat Visualization (8 SP)
+- Attack animations (slash, magic, etc.)
+- Damage number popups
+- HP/MP bar animations
+- Status effect indicators
+- Screen shake on heavy hits
+- Tests: Animation timing, damage display, effect rendering
+
+### Task 3.5: Save/Load System (5 SP)
+- Serialize game state with serde/ron
+- Save file management (create, load, delete)
+- Auto-save on area transitions
+- Save slot selection UI
+- Tests: Save/load roundtrip, data integrity, error handling
+
+### Task 3.6: Simulated Network Layer (5 SP)
+- Simulated MMO server connection
+- Event-based network messages
+- Latency simulation
+- Disconnect/reconnect handling
+- Tests: Message serialization, connection states, event routing
