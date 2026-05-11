@@ -63,7 +63,7 @@ impl Stats {
         }
     }
 
-    fn level_up(&mut self) {
+    pub fn level_up(&mut self) {
         self.experience -= self.next_level_exp;
         self.level += 1;
         self.max_hp += 10;

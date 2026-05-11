@@ -9,3 +9,4 @@ pub mod save_load;
 pub mod network;
 pub mod dialogue;
 pub mod options_menu;
+pub mod progression;
