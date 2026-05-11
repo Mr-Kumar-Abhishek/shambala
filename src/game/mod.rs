@@ -7,3 +7,5 @@ pub mod chaos_gate;
 pub mod quest;
 pub mod save_load;
 pub mod network;
+pub mod dialogue;
+pub mod options_menu;
