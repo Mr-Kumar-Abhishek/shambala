@@ -11,3 +11,5 @@ pub mod audio;
 pub mod audio_playback;
 pub mod animation;
 pub mod effects;
+pub mod combat_integration;
+pub mod exploration;

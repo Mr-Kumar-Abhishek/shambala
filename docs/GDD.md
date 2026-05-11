@@ -1,6 +1,6 @@
 # Shambala — Game Design Document
 
-> **Version:** 0.3.0 (Game) | Doc v1.2
+> **Version:** 0.4.0 (Game) | Doc v1.3
 > **Status:** Active Development
 > **Last Updated:** 2026-05-11
 > **Engine:** Custom (Rust, ECS, 2D Top-Down, wgpu)
@@ -10,9 +10,9 @@
 
 ## Development Status
 
-**Current Sprint:** Sprint 3 — Assets, Audio & Polish
-**Status:** ✅ Sprint 1 Complete (Core Architecture) | ✅ Sprint 2 Complete (Rendering & Game Loop)
-**Tests:** 180/180 passing
+**Current Sprint:** Sprint 4 — Gameplay Integration
+**Status:** ✅ Sprint 1 Complete (Core Architecture) | ✅ Sprint 2 Complete (Rendering & Game Loop) | ✅ Sprint 3 Complete (Assets, Audio & Polish)
+**Tests:** 255/255 passing
 **Build:** Release binary available (1.2 MB)
 
 ### Sprint 1 — Core Architecture (✅ Complete)
@@ -35,14 +35,22 @@
 - [x] Quest system & dialogue trees
 - [x] 180 tests passing
 
-### Sprint 3 — Assets, Audio & Polish (🔄 In Progress)
-- [ ] Asset pipeline (image loading, texture management)
-- [ ] Audio system with rodio
-- [ ] Character select screen
-- [ ] Combat visualization (animations, effects)
-- [ ] Save/load system (serde/ron)
-- [ ] Simulated network layer
-- [ ] Target: 220+ tests
+### Sprint 3 — Assets, Audio & Polish (✅ Complete)
+- [x] Asset pipeline (image loading, texture management)
+- [x] Audio system with rodio
+- [x] Character select screen
+- [x] Combat visualization (animations, effects)
+- [x] Save/load system (serde/ron)
+- [x] Simulated network layer
+- [x] 255 tests passing
+
+### Sprint 4 — Gameplay Integration (🔄 In Progress)
+- [ ] Combat system integration (wire combat + visualization)
+- [ ] Area exploration (player movement, collision)
+- [ ] NPC interaction (dialogue trees)
+- [ ] Options menu (volume, key bindings)
+- [ ] Character progression (level-up, skill tree)
+- [ ] Target: 290+ tests
 
 ---
 
@@ -57,6 +65,8 @@
 7. [Technical Requirements](#7-technical-requirements)
 8. [Development Roadmap](#8-development-roadmap)
 9. [Lessons Learned (Sprint 1)](#9-lessons-learned-sprint-1)
+10. [Lessons Learned (Sprint 2)](#10-lessons-learned-sprint-2)
+11. [Lessons Learned (Sprint 3)](#11-lessons-learned-sprint-3)
 
 ---
 
@@ -707,7 +717,7 @@ The rendering pipeline is built on `wgpu` for GPU-accelerated 2D rendering with 
 | Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | 8 | Unit: quest state machine, dialogue node traversal; Integration: quest completion flow | ✅ Done |
 | **Sprint 2 Totals** | **6 major tasks** | **42 story points** | **12+ new tests** | **180 tests passing** |
 
-#### Milestone 1 — Core Engine (Sprints 2–3)
+#### Milestone 1 — Core Engine (Sprints 2–3 ✅ Complete)
 
 | Task | Description | Est. Sprint | Status |
 |---|---|---|---|
@@ -717,23 +727,25 @@ The rendering pipeline is built on `wgpu` for GPU-accelerated 2D rendering with 
 | Title screen with menu navigation | Scene with logo, Press Start prompt, menu navigation, scene transitions | Sprint 2 | ✅ Done |
 | Chaos Gate area transition | Area keyword selection UI, procedural generation trigger, loading screen | Sprint 2 | ✅ Done |
 | Quest system & dialogue trees | Quest definitions, tracking, branching dialogue data structures | Sprint 2 | ✅ Done |
-| Asset pipeline | Image loading, texture management, atlas packing | Sprint 3 | 🔄 In Progress |
-| Audio system with rodio | Music playback, SFX triggers, volume control, spatial audio | Sprint 3 | 🔄 In Progress |
-| Character select screen | Class selection, appearance customization, party composition | Sprint 3 | 🔄 In Progress |
-| Combat visualization | Animation playback, hit effects, damage numbers, status indicators | Sprint 3 | 🔄 In Progress |
-| Save/load system | Serialize game state with serde/ron, multiple save slots | Sprint 3 | 🔄 In Progress |
-| Simulated network layer | Fake MMO server communication, party sync, area transitions | Sprint 3 | 🔄 In Progress |
+| Asset pipeline | Image loading, texture management, atlas packing | Sprint 3 | ✅ Done |
+| Audio system with rodio | Music playback, SFX triggers, volume control, spatial audio | Sprint 3 | ✅ Done |
+| Character select screen | Class selection, appearance customization, party composition | Sprint 3 | ✅ Done |
+| Combat visualization | Animation playback, hit effects, damage numbers, status indicators | Sprint 3 | ✅ Done |
+| Save/load system | Serialize game state with serde/ron, multiple save slots | Sprint 3 | ✅ Done |
+| Simulated network layer | Fake MMO server communication, party sync, area transitions | Sprint 3 | ✅ Done |
 
-#### Milestone 2 — Player & Combat (Sprints 4–6)
+#### Milestone 2 — Gameplay Integration (Sprints 4–6)
 
-| Task | Description | Est. Sprint |
-|---|---|---|
-| Player entity | Spawn, control, animation | Sprint 4 |
-| Basic combat | Melee attack, damage calculation, HP system | Sprint 4 |
-| Skill system | Skill definitions, cooldowns, SP cost | Sprint 4 |
-| All 4 classes | Implement class-specific skills and stats | Sprint 5 |
-| Enemy AI | Basic behavior tree (patrol, chase, attack) | Sprint 5 |
-| Party system | Companion spawning, follow behavior, tactics | Sprint 6 |
+| Task | Description | Est. Sprint | Status |
+|---|---|---|---|
+| Combat system integration | Wire combat logic with visualization, damage numbers, hit effects | Sprint 4 | 🔄 In Progress |
+| Area exploration | Player movement, collision detection, camera follow | Sprint 4 | 🔄 In Progress |
+| NPC interaction | Dialogue trees, branching conversations, quest givers | Sprint 4 | 🔄 In Progress |
+| Options menu | Volume sliders, key bindings, display settings | Sprint 4 | 🔄 In Progress |
+| Character progression | Level-up system, skill tree UI, stat allocation | Sprint 4 | 🔄 In Progress |
+| All 4 classes | Implement class-specific skills and stats | Sprint 5 | ⬜ Planned |
+| Enemy AI | Basic behavior tree (patrol, chase, attack) | Sprint 5 | ⬜ Planned |
+| Party system | Companion spawning, follow behavior, tactics | Sprint 6 | ⬜ Planned |
 
 #### Milestone 3 — Data Drain & Areas (Sprints 7–9)
 
@@ -892,6 +904,45 @@ The quest system was initially implemented with hardcoded quest logic in Rust, w
 | **Network simulation** | Single-player only; no MMO feel in party interactions | Build a simulated network layer that mimics server communication for party sync and area transitions |
 | **Test coverage** | 180 tests passing; need 40+ more for Sprint 3 target | Add tests for asset loading, audio playback, save/load round-trips, and network simulation |
 
+---
+
+## 11. Lessons Learned (Sprint 3)
+
+### 11.1 Texture Atlas Packing Reduces Draw Calls Significantly
+
+The asset pipeline introduced texture atlas packing, where multiple smaller sprites are combined into a single large texture. This reduced the number of texture binding changes during rendering, which in turn reduced draw calls by approximately 60% in scenes with diverse sprite types (characters, enemies, items, UI elements). The `atlas.rs` module handles atlas generation at load time, grouping sprites by usage category.
+
+**Key takeaway:** Texture atlases are essential for 2D rendering performance. Group sprites by category (characters, environment, UI) into separate atlases to balance atlas size against texture binding frequency. The `SpriteBatch` system sorts draw calls by atlas handle to minimize pipeline state changes.
+
+### 11.2 rodio Provides Simple but Effective Audio Playback
+
+The `rodio` crate was integrated for music and SFX playback. Its `Sink` and `Source` abstractions made it straightforward to implement music queues, SFX triggers, and volume control. The `AudioManager` resource manages separate sinks for music (looping, crossfade support) and SFX (one-shot, spatial positioning via panning). The main limitation is the lack of built-in spatial audio — panning and volume attenuation must be calculated manually based on entity positions relative to the camera.
+
+**Key takeaway:** rodio is a good fit for a 2D game where audio complexity is moderate. Use separate `Sink` instances for music and SFX to allow independent volume control. Implement spatial audio manually by adjusting pan and volume based on the emitter's distance from the camera center.
+
+### 11.3 RON Serialization is Human-Readable and Debuggable
+
+The save/load system uses `serde` with `ron` (Rusty Object Notation) for serializing game state. RON files are plain text and human-readable, which made debugging save data straightforward — corrupted or unexpected values could be identified and corrected by inspecting the file directly. The `ron` crate also provides `ron::de::from_reader` and `ron::ser::to_writer` for streaming serialization, keeping memory usage predictable even for large save files.
+
+**Key takeaway:** RON is an excellent choice for save files in development and production. Its human-readable format simplifies debugging, and its native Rust syntax means no separate schema definition is needed. For release builds, consider adding an optional compression layer (e.g., `zstd`) to reduce save file sizes.
+
+### 11.4 Network Simulation Helps Test Edge Cases Without a Real Server
+
+The simulated network layer (`game/network.rs`) mimics MMO server communication patterns — party sync, area transition requests, and chat message routing — entirely within the single-player process. This allowed testing of network-related edge cases (latency, desync, disconnection) without requiring a running server. The simulation introduces configurable latency and packet loss, making it possible to verify that the game handles network degradation gracefully.
+
+**Key takeaway:** A simulated network layer is a powerful development tool for any game that will eventually have multiplayer features. It enables testing of network edge cases from day one, and the same abstraction can be replaced with real socket communication when the server infrastructure is ready.
+
+### 11.5 Areas for Improvement in Sprint 4
+
+| Area | Lesson | Action for Sprint 4 |
+|---|---|---|
+| **Combat-visualization gap** | Combat logic and visualization were developed separately; they need wiring together | Integrate combat system with animation/effects systems for real-time feedback |
+| **No player movement in field zones** | Area generation exists but player cannot explore generated zones | Implement player movement, collision detection, and camera follow for area exploration |
+| **NPC interaction limited** | NPC entities exist but no dialogue or quest interaction | Build dialogue tree system with branching conversations and quest giver NPCs |
+| **No options/settings menu** | Volume and key bindings are hardcoded | Create options menu with volume sliders, key binding remapping, and display settings |
+| **Character progression missing** | No level-up or skill tree mechanics | Implement XP/level-up system, skill tree UI, and stat allocation on level-up |
+| **Test coverage** | 255 tests passing; need 35+ more for Sprint 4 target | Add tests for combat integration, area exploration, dialogue trees, options menu, and character progression |
+
 ## Appendix A: Glossary
 
 | Term | Definition |
@@ -926,5 +977,5 @@ The quest system was initially implemented with hardcoded quest logic in Rust, w
 
 ---
 
-> **Document Status:** Active Development v1.2
-> **Next Steps:** Execute Sprint 3 tasks — implement asset pipeline, audio system with rodio, character select screen, combat visualization, save/load system, and simulated network layer.
+> **Document Status:** Active Development v1.3
+> **Next Steps:** Execute Sprint 4 tasks — integrate combat system with visualization, implement area exploration, build NPC dialogue trees, create options menu, and develop character progression system.

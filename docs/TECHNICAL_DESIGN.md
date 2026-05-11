@@ -14,7 +14,8 @@
 |--------|-------|-------|-------|--------|
 | Sprint 1 | Core Architecture | 125 | Release binary (1.2 MB) | ✅ Complete |
 | Sprint 2 | Rendering & Game Loop | 180 | Windowed app (wgpu/winit) | ✅ Complete |
-| Sprint 3 | Assets, Audio & Polish | Target: 220+ | Full game features | 🔄 In Progress |
+| Sprint 3 | Assets, Audio & Polish | 255 | Full game features | ✅ Complete |
+| Sprint 4 | Gameplay Integration | Target: 290+ | Playable game loop | 🔄 In Progress |
 
 ---
 
@@ -2636,7 +2637,7 @@ The `edition = "2024"` in `Cargo.toml` indicates the project uses the Rust 2024 
 ---
 
 > **Document Status:** Draft v1.0
-> **Next Steps:** Sprint 3 implementation in progress — asset pipeline, audio system, character select, combat visualization, save/load, simulated network layer.
+> **Next Steps:** Sprint 4 implementation in progress — combat system integration, area exploration, NPC interaction, options menu, character progression.
 
 ---
 
@@ -2729,3 +2730,42 @@ The `edition = "2024"` in `Cargo.toml` indicates the project uses the Rust 2024 
 - Latency simulation
 - Disconnect/reconnect handling
 - Tests: Message serialization, connection states, event routing
+
+---
+
+## 16. Sprint 4 Implementation Plan
+
+### Task 4.1: Combat System Integration (8 SP)
+- Wire CombatSystem with EffectsManager for damage numbers
+- Wire AnimationManager for attack animations
+- Implement turn-based combat flow (player attack → enemy attack)
+- Add combat UI (HP bars, skill buttons, party frames)
+- Tests: Full combat flow, damage display, animation sync
+
+### Task 4.2: Area Exploration (8 SP)
+- Implement player movement with WASD/arrow keys
+- Add collision detection with walls
+- Implement camera follow with smoothing
+- Add area transition triggers
+- Tests: Movement, collision, camera, transitions
+
+### Task 4.3: NPC Interaction (5 SP)
+- Wire dialogue trees with NPC entities
+- Implement interaction prompts
+- Add quest giver indicators
+- Implement dialogue UI
+- Tests: Dialogue flow, quest assignment, completion
+
+### Task 4.4: Options Menu (5 SP)
+- Volume sliders (master, BGM, SFX)
+- Key binding display
+- Display settings (windowed/fullscreen)
+- Back to title navigation
+- Tests: Volume control, key display, navigation
+
+### Task 4.5: Character Progression (5 SP)
+- Level-up screen with stat increases
+- Skill tree UI
+- Equipment management
+- Character stats display
+- Tests: Level-up flow, skill unlocks, equipment

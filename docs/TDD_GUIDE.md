@@ -12,7 +12,8 @@
 |--------|-------|-------|--------|
 | Sprint 1 | Core Architecture | 125 (115 unit + 10 integration) | ✅ Complete |
 | Sprint 2 | Rendering & Game Loop | 180 (165 unit + 15 integration) | ✅ Complete |
-| Sprint 3 | Assets, Audio & Polish | Target: 220+ | 🔄 In Progress |
+| Sprint 3 | Assets, Audio & Polish | 255 | ✅ Complete |
+| Sprint 4 | Gameplay Integration | Target: 290+ | 🔄 In Progress |
 
 ---
 
@@ -1353,6 +1354,37 @@ fn test_damage_minimum_when_attack_is_zero() {
 - Message routing: Test event dispatch to correct handlers
 - Latency simulation: Test delayed message delivery
 - Reconnection: Test auto-reconnect logic
+
+---
+
+## Sprint 4 Testing Strategy
+
+### Combat Integration Tests
+- Full combat flow: Player attack → damage calc → animation → damage number → enemy attack
+- Skill usage: Test each skill type with correct damage and cooldown
+- Party combat: Test AI companion behavior in combat
+- Data Drain: Test charge → execute → reward flow in combat context
+
+### Area Exploration Tests
+- Movement: Test WASD/arrow key movement with velocity
+- Collision: Test wall collision stops movement
+- Camera: Test smooth follow with lerp
+- Transitions: Test area transition triggers
+
+### NPC Interaction Tests
+- Dialogue flow: Test dialogue tree navigation
+- Quest assignment: Test quest start from NPC
+- Quest completion: Test quest turn-in dialogue
+
+### Options Menu Tests
+- Volume sliders: Test volume changes persist
+- Key bindings: Test key display and rebinding
+- Navigation: Test back to title works
+
+### Character Progression Tests
+- Level-up: Test stat increases on level-up
+- Skill tree: Test skill unlock requirements
+- Equipment: Test equipment stat modifications
 
 ---
 
@@ -3467,4 +3499,4 @@ cargo watch -x tdd     # Auto-run tests on file change
 ---
 
 > **Document Status:** v1.1
-> **Next Steps:** Sprint 3 in progress — asset pipeline, audio system, character select, combat visualization, save/load, network layer.
+> **Next Steps:** Sprint 4 in progress — combat system integration, area exploration, NPC interaction, options menu, character progression.
