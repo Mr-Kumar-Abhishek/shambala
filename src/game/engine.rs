@@ -9,6 +9,9 @@ use crate::core::constants;
 use crate::render::pipeline::RenderPipeline;
 use crate::render::sprite::SpriteBatch;
 use crate::render::ui_render::UIRenderer;
+use crate::game::title_screen::TitleScreen;
+use crate::game::chaos_gate::ChaosGate;
+use crate::game::quest::QuestManager;
 
 pub struct GameEngine<'window> {
     pub state_manager: GameStateManager,
@@ -21,10 +24,16 @@ pub struct GameEngine<'window> {
     pub sprite_batch: SpriteBatch,
     pub ui_renderer: UIRenderer,
     pub running: bool,
+    pub title_screen: TitleScreen,
+    pub chaos_gate: ChaosGate,
+    pub quest_manager: QuestManager,
 }
 
 impl<'window> GameEngine<'window> {
     pub fn new() -> Self {
+        let mut quest_manager = QuestManager::new();
+        quest_manager.register_quest(QuestManager::create_tutorial_quest());
+
         Self {
             state_manager: GameStateManager::new(),
             time: GameTime::new(),
@@ -36,6 +45,9 @@ impl<'window> GameEngine<'window> {
             sprite_batch: SpriteBatch::new(),
             ui_renderer: UIRenderer::new(),
             running: true,
+            title_screen: TitleScreen::new(),
+            chaos_gate: ChaosGate::new(),
+            quest_manager,
         }
     }
 
