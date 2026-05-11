@@ -9,3 +9,5 @@ pub mod area_gen;
 pub mod ui;
 pub mod audio;
 pub mod audio_playback;
+pub mod animation;
+pub mod effects;
