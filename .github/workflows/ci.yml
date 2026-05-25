@@ -1,0 +1,203 @@
+# =============================================================================
+# Shambala — CI/CD Workflow
+# =============================================================================
+# Validates that the project compiles and all tests pass on Ubuntu Linux.
+# Runs on every push and pull request to main/master, plus nightly.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Nightly build at 04:00 UTC
+    - cron: "0 4 * * *"
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Fail fast on warnings in CI
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # CHECK — quickest gate: cargo check + clippy + rustfmt
+  # ---------------------------------------------------------------------------
+  check:
+    name: Check (clippy + fmt)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install system dependencies (wgpu / winit / audio)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libvulkan-dev          \
+            libx11-dev             \
+            libxrandr-dev          \
+            libxcursor-dev         \
+            libxi-dev              \
+            libxext-dev            \
+            libasound2-dev         \
+            libudev-dev            \
+            pkg-config
+
+      - name: cargo check (all targets)
+        run: cargo check --all-targets
+
+      - name: cargo clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
+  # ---------------------------------------------------------------------------
+  # TEST — full test suite (unit + integration)
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [check]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install system dependencies (wgpu / winit / audio)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libvulkan-dev          \
+            libx11-dev             \
+            libxrandr-dev          \
+            libxcursor-dev         \
+            libxi-dev              \
+            libxext-dev            \
+            libasound2-dev         \
+            libudev-dev            \
+            pkg-config
+
+      - name: cargo test
+        run: cargo test --verbose
+
+      - name: Print test count
+        run: |
+          echo "=== Test Summary ==="
+          cargo test --verbose 2>&1 | grep -E "^(test result|running [0-9]+ test)" | tail -5
+
+  # ---------------------------------------------------------------------------
+  # BUILD — release build (no tests, just optimisation)
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build (release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [test]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install system dependencies (wgpu / winit / audio)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libvulkan-dev          \
+            libx11-dev             \
+            libxrandr-dev          \
+            libxcursor-dev         \
+            libxi-dev              \
+            libxext-dev            \
+            libasound2-dev         \
+            libudev-dev            \
+            pkg-config
+
+      - name: cargo build --release
+        run: cargo build --release
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shambala-x86_64-linux
+          path: target/release/shambala
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # BENCH — run benchmarks (non-blocking, informational)
+  # ---------------------------------------------------------------------------
+  bench:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [check]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (nightly for benchmarks)
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libvulkan-dev          \
+            libx11-dev             \
+            libxrandr-dev          \
+            libxcursor-dev         \
+            libxi-dev              \
+            libxext-dev            \
+            libasound2-dev         \
+            libudev-dev            \
+            pkg-config
+
+      - name: cargo bench
+        run: cargo bench --verbose
+
+      - name: Upload benchmark reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-reports
+          path: target/criterion/
+          retention-days: 7
