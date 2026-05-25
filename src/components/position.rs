@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// 2D world-space position.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
@@ -7,15 +8,18 @@ pub struct Position {
 }
 
 impl Position {
+    /// Create a new position at `(x, y)`.
     pub fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
 
+    /// Euclidean distance to another position.
     pub fn distance_to(&self, other: &Position) -> f32 {
         ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()
     }
 }
 
+/// 2D velocity vector, used during exploration movement.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Velocity {
     pub x: f32,
@@ -23,10 +27,12 @@ pub struct Velocity {
 }
 
 impl Velocity {
+    /// Create a new velocity vector `(x, y)`.
     pub fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
 
+    /// Magnitude (speed) of this velocity vector.
     pub fn speed(&self) -> f32 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
     }

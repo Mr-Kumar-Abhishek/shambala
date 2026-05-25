@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 use crate::core::types::Class;
 
+/// Combat statistics for a character (player or enemy).
+///
+/// Each [`Class`] has a unique starting stat profile. Stats grow on
+/// level-up and are used by the [`CombatSystem`](crate::systems::combat::CombatSystem)
+/// for damage calculations.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Stats {
     pub level: u32,
@@ -19,6 +24,7 @@ pub struct Stats {
 }
 
 impl Stats {
+    /// Create stats for the given class at level 1 with starting values.
     pub fn new(class: Class) -> Self {
         match class {
             Class::TwinBlade => Self {
@@ -44,18 +50,22 @@ impl Stats {
         }
     }
 
+    /// Reduce HP by `damage` (clamped to 0).
     pub fn take_damage(&mut self, damage: u32) {
         self.hp = self.hp.saturating_sub(damage);
     }
 
+    /// Restore HP by `amount` (capped at max_hp).
     pub fn heal(&mut self, amount: u32) {
         self.hp = (self.hp + amount).min(self.max_hp);
     }
 
+    /// Returns `true` if the character is still alive (HP > 0).
     pub fn is_alive(&self) -> bool {
         self.hp > 0
     }
 
+    /// Add experience and trigger automatic level-ups if thresholds are met.
     pub fn add_experience(&mut self, exp: u64) {
         self.experience += exp;
         while self.experience >= self.next_level_exp {
@@ -63,6 +73,10 @@ impl Stats {
         }
     }
 
+    /// Apply a single level-up: increase stats and set next EXP threshold.
+    ///
+    /// Base stat gains per level:
+    /// - HP +10, MP +5, Attack +2, Defence +1
     pub fn level_up(&mut self) {
         self.experience -= self.next_level_exp;
         self.level += 1;

@@ -13,6 +13,20 @@ use crate::game::title_screen::TitleScreen;
 use crate::game::chaos_gate::ChaosGate;
 use crate::game::quest::QuestManager;
 
+/// Central game engine that owns all resources and orchestrates the update loop.
+///
+/// The engine owns:
+/// - **Core resources**: state machine, time, input, camera
+/// - **Asset systems**: texture/audio asset manager, audio manager
+/// - **Rendering**: optional wgpu pipeline, sprite batch, UI renderer
+/// - **Game screens**: title screen, chaos gate, quest manager
+///
+/// # Lifecycle
+///
+/// 1. [`new()`](Self::new) — create the engine (starts in Boot state)
+/// 2. [`initialize()`](Self::initialize) — register default assets
+/// 3. [`update()`](Self::update) — advance time, clear frame input, update audio
+/// 4. [`shutdown()`](Self::shutdown) — graceful shutdown
 pub struct GameEngine<'window> {
     pub state_manager: GameStateManager,
     pub time: GameTime,
@@ -30,6 +44,9 @@ pub struct GameEngine<'window> {
 }
 
 impl<'window> GameEngine<'window> {
+    /// Create a new engine in the Boot state.
+    ///
+    /// Registers the tutorial quest automatically.
     pub fn new() -> Self {
         let mut quest_manager = QuestManager::new();
         quest_manager.register_quest(QuestManager::create_tutorial_quest());
@@ -51,6 +68,9 @@ impl<'window> GameEngine<'window> {
         }
     }
 
+    /// Initialise the engine: transition to Boot and register default assets.
+    ///
+    /// Must be called after [`new()`](Self::new) and before the event loop starts.
     pub fn initialize(&mut self) {
         log::info!("Initializing game engine...");
         self.state_manager.transition_to(GameState::Boot);
@@ -58,10 +78,17 @@ impl<'window> GameEngine<'window> {
         log::info!("Game engine initialized");
     }
 
+    /// Attach a wgpu render pipeline to the engine.
+    ///
+    /// Must be called after the window is created but before the main loop.
     pub fn set_render_pipeline(&mut self, pipeline: RenderPipeline<'window>) {
         self.render_pipeline = Some(pipeline);
     }
 
+    /// Register placeholder asset paths for sprites, tiles, UI, and audio.
+    ///
+    /// These paths are registered so the engine can reference them by key;
+    /// actual file loading requires disk I/O at runtime.
     fn register_default_assets(&mut self) {
         // Player sprites
         for class in &["TwinBlade", "HeavyBlade", "LongArm", "Wavemaster"] {
@@ -93,12 +120,17 @@ impl<'window> GameEngine<'window> {
         self.assets.register_texture("bgm_field", "assets/audio/bgm/field.ogg");
     }
 
+    /// Advance the engine by one frame.
+    ///
+    /// Updates the game clock, clears one-shot input states, and
+    /// adjusts BGM based on the current game state.
     pub fn update(&mut self, dt: f32) {
         self.time.update(dt);
         self.input.clear_frame();
         self.audio_manager_update();
     }
 
+    /// Switch BGM track based on the current [`GameState`].
     fn audio_manager_update(&mut self) {
         let bgm = match self.state_manager.current() {
             GameState::Title | GameState::Menu => "bgm_menu",
@@ -109,6 +141,7 @@ impl<'window> GameEngine<'window> {
         self.audio.play_bgm(bgm);
     }
 
+    /// Gracefully shut down the engine (sets `running = false`).
     pub fn shutdown(&mut self) {
         log::info!("Shutting down game engine...");
         self.running = false;
