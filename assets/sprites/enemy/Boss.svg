@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e74c3c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#e74c3c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="30" r="30" fill="url(#glow)"/>
+  <ellipse cx="32" cy="58" rx="14" ry="4" fill="rgba(0,0,0,0.3)"/>
+  <rect x="21" y="40" width="9" height="16" rx="3" fill="#4a235a"/>
+  <rect x="34" y="40" width="9" height="16" rx="3" fill="#4a235a"/>
+  <rect x="16" y="22" width="32" height="22" rx="5" fill="#6c3483"/>
+  <rect x="14" y="38" width="36" height="5" rx="2" fill="#f1c40f"/>
+  <rect x="16" y="22" width="32" height="4" rx="2" fill="#c0392b"/>
+  <rect x="8" y="24" width="8" height="20" rx="3" fill="#5b2c6f"/>
+  <rect x="48" y="24" width="8" height="20" rx="3" fill="#5b2c6f"/>
+  <circle cx="12" cy="46" r="4" fill="#d5d8dc"/>
+  <circle cx="52" cy="46" r="4" fill="#d5d8dc"/>
+  <!-- Head -->
+  <ellipse cx="32" cy="16" rx="13" ry="11" fill="#d5d8dc"/>
+  <!-- Crown/horns -->
+  <polygon points="22,6 26,12 30,8 34,12 38,8 42,12 46,6 44,14 40,10 36,14 32,10 28,14 24,10 20,14" fill="#f1c40f"/>
+  <circle cx="26" cy="9" r="1.5" fill="#e74c3c"/>
+  <circle cx="32" cy="7" r="1.5" fill="#e74c3c"/>
+  <circle cx="38" cy="9" r="1.5" fill="#e74c3c"/>
+  <!-- Eyes -->
+  <circle cx="26" cy="15" r="3.5" fill="#e74c3c"/>
+  <circle cx="38" cy="15" r="3.5" fill="#e74c3c"/>
+  <circle cx="26" cy="15" r="1.5" fill="#fff"/>
+  <circle cx="38" cy="15" r="1.5" fill="#fff"/>
+  <!-- Scowl -->
+  <path d="M26 21 Q32 18 38 21" stroke="#2c3e50" stroke-width="1.5" fill="none"/>
+  <line x1="28" y1="21" x2="28" y2="23" stroke="#2c3e50" stroke-width="1"/>
+  <line x1="36" y1="21" x2="36" y2="23" stroke="#2c3e50" stroke-width="1"/>
+</svg>

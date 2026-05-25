@@ -94,14 +94,14 @@ impl<'window> GameEngine<'window> {
         for class in &["TwinBlade", "HeavyBlade", "LongArm", "Wavemaster"] {
             self.assets.register_texture(
                 &format!("player_{}", class),
-                &format!("assets/sprites/player/{}.png", class),
+                &format!("assets/sprites/player/{}.svg", class),
             );
         }
         // Enemy sprites
         for enemy in &["Goblin", "Wolf", "Skeleton", "Mage", "Boss"] {
             self.assets.register_texture(
                 &format!("enemy_{}", enemy),
-                &format!("assets/sprites/enemy/{}.png", enemy),
+                &format!("assets/sprites/enemy/{}.svg", enemy),
             );
         }
         // Tile textures
@@ -110,16 +110,16 @@ impl<'window> GameEngine<'window> {
         ] {
             self.assets.register_texture(
                 &format!("tile_{}", tile),
-                &format!("assets/tiles/{}.png", tile),
+                &format!("assets/tiles/{}.svg", tile),
             );
         }
         // UI assets
         self.assets
-            .register_texture("hud_frame", "assets/ui/hud_frame.png");
+            .register_texture("hud_frame", "assets/ui/hud_frame.svg");
         self.assets
-            .register_texture("hp_bar", "assets/ui/hp_bar.png");
+            .register_texture("hp_bar", "assets/ui/hp_bar.svg");
         self.assets
-            .register_texture("mp_bar", "assets/ui/mp_bar.png");
+            .register_texture("mp_bar", "assets/ui/mp_bar.svg");
         // Audio
         self.assets
             .register_texture("bgm_root_town", "assets/audio/bgm/root_town.ogg");

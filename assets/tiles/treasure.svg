@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#d4c9a8"/>
+  <!-- Chest box -->
+  <rect x="6" y="14" width="20" height="14" rx="3" fill="#8b4513"/>
+  <rect x="6" y="14" width="20" height="6" rx="3" fill="#a0522d"/>
+  <!-- Lock -->
+  <rect x="14" y="16" width="4" height="5" rx="1" fill="#f1c40f"/>
+  <circle cx="16" cy="18" r="1.5" fill="#2c3e50"/>
+  <!-- Hinges -->
+  <rect x="8" y="16" width="3" height="2" rx="0.5" fill="#6c3483"/>
+  <rect x="21" y="16" width="3" height="2" rx="0.5" fill="#6c3483"/>
+  <!-- Sparkle -->
+  <circle cx="10" cy="10" r="1.5" fill="#f1c40f" opacity="0.8"/>
+  <circle cx="22" cy="8" r="1" fill="#f1c40f" opacity="0.6"/>
+  <circle cx="16" cy="6" r="0.8" fill="#f1c40f" opacity="0.4"/>
+</svg>

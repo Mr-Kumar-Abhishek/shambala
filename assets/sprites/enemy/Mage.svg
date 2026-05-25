@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0d0d1a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="32" cy="58" rx="10" ry="3" fill="rgba(0,0,0,0.3)"/>
+  <rect x="22" y="42" width="20" height="14" rx="3" fill="url(#robe)"/>
+  <rect x="19" y="22" width="26" height="22" rx="4" fill="url(#robe)"/>
+  <rect x="19" y="40" width="26" height="4" rx="1" fill="#e74c3c"/>
+  <rect x="11" y="24" width="8" height="18" rx="3" fill="url(#robe)"/>
+  <rect x="45" y="24" width="8" height="18" rx="3" fill="url(#robe)"/>
+  <circle cx="15" cy="44" r="3" fill="#d5d8dc"/>
+  <circle cx="49" cy="44" r="3" fill="#d5d8dc"/>
+  <!-- Staff -->
+  <rect x="50" y="4" width="3" height="48" rx="1.5" fill="#5c3d1f"/>
+  <circle cx="51" cy="6" r="5" fill="#8e44ad"/>
+  <circle cx="51" cy="6" r="3" fill="#9b59b6"/>
+  <circle cx="51" cy="6" r="1.5" fill="#fff"/>
+  <!-- Magic aura -->
+  <circle cx="51" cy="6" r="7" fill="none" stroke="#9b59b6" stroke-width="0.5" opacity="0.5"/>
+  <!-- Head -->
+  <ellipse cx="32" cy="15" rx="9" ry="8" fill="#d5d8dc"/>
+  <!-- Hood -->
+  <path d="M18 15 Q22 4 32 3 Q42 4 46 15 Q44 10 32 9 Q20 10 18 15Z" fill="#1a1a2e"/>
+  <path d="M18 15 Q18 20 20 22 L44 22 Q46 20 46 15Z" fill="#1a1a2e"/>
+  <!-- Eyes (glowing) -->
+  <circle cx="27" cy="14" r="2.5" fill="#e74c3c"/>
+  <circle cx="37" cy="14" r="2.5" fill="#e74c3c"/>
+  <circle cx="27" cy="14" r="1" fill="#fff"/>
+  <circle cx="37" cy="14" r="1" fill="#fff"/>
+  <!-- Mouth -->
+  <path d="M28 18 Q32 20 36 18" stroke="#2c3e50" stroke-width="1" fill="none"/>
+</svg>

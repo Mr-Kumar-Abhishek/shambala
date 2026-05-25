@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <ellipse cx="32" cy="58" rx="10" ry="3" fill="rgba(0,0,0,0.2)"/>
+  <rect x="24" y="42" width="6" height="14" rx="2" fill="#d5d8dc"/>
+  <rect x="34" y="42" width="6" height="14" rx="2" fill="#d5d8dc"/>
+  <rect x="20" y="24" width="24" height="20" rx="4" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Ribcage -->
+  <line x1="22" y1="28" x2="42" y2="28" stroke="#bdc3c7" stroke-width="1.5"/>
+  <line x1="22" y1="32" x2="42" y2="32" stroke="#bdc3c7" stroke-width="1.5"/>
+  <line x1="22" y1="36" x2="42" y2="36" stroke="#bdc3c7" stroke-width="1.5"/>
+  <line x1="22" y1="40" x2="42" y2="40" stroke="#bdc3c7" stroke-width="1.5"/>
+  <line x1="32" y1="24" x2="32" y2="44" stroke="#bdc3c7" stroke-width="1"/>
+  <rect x="12" y="26" width="7" height="16" rx="3" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <rect x="45" y="26" width="7" height="16" rx="3" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Hands -->
+  <circle cx="15" cy="44" r="3" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <circle cx="49" cy="44" r="3" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Head -->
+  <ellipse cx="32" cy="16" rx="10" ry="9" fill="#e5e7e9" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Eye sockets -->
+  <ellipse cx="27" cy="15" rx="3" ry="3.5" fill="#1a1a2e"/>
+  <ellipse cx="37" cy="15" rx="3" ry="3.5" fill="#1a1a2e"/>
+  <circle cx="27" cy="15" r="1.5" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="37" cy="15" r="1.5" fill="#e74c3c" opacity="0.8"/>
+  <!-- Mouth -->
+  <path d="M26 20 Q32 23 38 20" stroke="#1a1a2e" stroke-width="1.2" fill="none"/>
+  <line x1="28" y1="20" x2="28" y2="22" stroke="#1a1a2e" stroke-width="1"/>
+  <line x1="32" y1="21" x2="32" y2="23" stroke="#1a1a2e" stroke-width="1"/>
+  <line x1="36" y1="20" x2="36" y2="22" stroke="#1a1a2e" stroke-width="1"/>
+  <!-- Weapon -->
+  <rect x="50" y="14" width="3" height="30" rx="1.5" fill="#6c6c6c" transform="rotate(15, 52, 29)"/>
+  <rect x="48" y="10" width="7" height="6" rx="1" fill="#808080" transform="rotate(15, 52, 29)"/>
+</svg>
