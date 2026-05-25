@@ -8,8 +8,14 @@ impl PhysicsSystem {
         pos.y += vel.y * dt;
     }
 
-    pub fn check_collision(a: &Position, a_width: f32, a_height: f32,
-                           b: &Position, b_width: f32, b_height: f32) -> bool {
+    pub fn check_collision(
+        a: &Position,
+        a_width: f32,
+        a_height: f32,
+        b: &Position,
+        b_width: f32,
+        b_height: f32,
+    ) -> bool {
         let a_left = a.x;
         let a_right = a.x + a_width;
         let a_top = a.y;
@@ -54,14 +60,18 @@ mod tests {
     fn test_collision_detection() {
         let a = Position::new(0.0, 0.0);
         let b = Position::new(25.0, 25.0);
-        assert!(PhysicsSystem::check_collision(&a, 32.0, 32.0, &b, 32.0, 32.0));
+        assert!(PhysicsSystem::check_collision(
+            &a, 32.0, 32.0, &b, 32.0, 32.0
+        ));
     }
 
     #[test]
     fn test_no_collision() {
         let a = Position::new(0.0, 0.0);
         let b = Position::new(100.0, 100.0);
-        assert!(!PhysicsSystem::check_collision(&a, 32.0, 32.0, &b, 32.0, 32.0));
+        assert!(!PhysicsSystem::check_collision(
+            &a, 32.0, 32.0, &b, 32.0, 32.0
+        ));
     }
 
     #[test]

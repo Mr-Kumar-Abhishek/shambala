@@ -10,6 +10,12 @@ pub struct AudioManager {
     pub muted: bool,
 }
 
+impl Default for AudioManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AudioManager {
     pub fn new() -> Self {
         Self {

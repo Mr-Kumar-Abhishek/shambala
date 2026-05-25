@@ -1,8 +1,8 @@
-use crate::core::types::{Class, GameState};
-use crate::core::game_state::GameStateManager;
 use crate::components::stats::Stats;
-use crate::systems::input::InputAction;
+use crate::core::game_state::GameStateManager;
+use crate::core::types::{Class, GameState};
 use crate::resources::input_state::InputStateResource;
+use crate::systems::input::InputAction;
 
 #[derive(Debug, Clone)]
 pub struct CharacterPreview {
@@ -15,12 +15,20 @@ impl CharacterPreview {
     pub fn new(class: Class) -> Self {
         let stats = Stats::new(class);
         let description = match class {
-            Class::TwinBlade => "Fast and agile melee fighter. Excellent speed and combo potential.",
+            Class::TwinBlade => {
+                "Fast and agile melee fighter. Excellent speed and combo potential."
+            }
             Class::HeavyBlade => "Powerful tank with high HP and defense. Slow but devastating.",
             Class::LongArm => "Versatile hybrid fighter. Balanced melee and magic capabilities.",
-            Class::Wavemaster => "Pure magic user with powerful spells. Fragile but deadly at range.",
+            Class::Wavemaster => {
+                "Pure magic user with powerful spells. Fragile but deadly at range."
+            }
         };
-        Self { class, stats, description }
+        Self {
+            class,
+            stats,
+            description,
+        }
     }
 
     pub fn all() -> Vec<Self> {
@@ -40,6 +48,12 @@ pub struct CharacterSelectScreen {
     pub name_input_active: bool,
     pub confirmed: bool,
     pub visible: bool,
+}
+
+impl Default for CharacterSelectScreen {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CharacterSelectScreen {
@@ -98,10 +112,11 @@ impl CharacterSelectScreen {
     }
 
     pub fn add_char_to_name(&mut self, c: char) {
-        if self.name_input_active && self.player_name.len() < 12 {
-            if c.is_alphanumeric() || c == '_' || c == '-' {
-                self.player_name.push(c);
-            }
+        if self.name_input_active
+            && self.player_name.len() < 12
+            && (c.is_alphanumeric() || c == '_' || c == '-')
+        {
+            self.player_name.push(c);
         }
     }
 
@@ -159,10 +174,10 @@ mod tests {
     fn test_class_stats_accuracy() {
         let twin = CharacterPreview::new(Class::TwinBlade);
         assert_eq!(twin.stats.agility, 20);
-        
+
         let heavy = CharacterPreview::new(Class::HeavyBlade);
         assert_eq!(heavy.stats.hp, 150);
-        
+
         let wavemaster = CharacterPreview::new(Class::Wavemaster);
         assert_eq!(wavemaster.stats.magic_attack, 20);
     }
@@ -172,7 +187,7 @@ mod tests {
         let mut screen = CharacterSelectScreen::new();
         let mut input = InputStateResource::new();
         screen.name_input_active = false; // Skip name entry
-        
+
         input.set_action(InputAction::MoveLeft, InputState::Pressed);
         screen.update(0.016, &input);
         assert_eq!(screen.selected_index, 3); // Wraps to last
@@ -183,7 +198,7 @@ mod tests {
         let mut screen = CharacterSelectScreen::new();
         let mut input = InputStateResource::new();
         screen.name_input_active = false;
-        
+
         input.set_action(InputAction::MoveRight, InputState::Pressed);
         screen.update(0.016, &input);
         assert_eq!(screen.selected_index, 1);
@@ -195,7 +210,7 @@ mod tests {
         let mut input = InputStateResource::new();
         screen.name_input_active = false;
         screen.player_name = "Kite".to_string();
-        
+
         input.set_action(InputAction::Confirm, InputState::Pressed);
         let result = screen.update(0.016, &input);
         assert!(result.is_some());

@@ -1,5 +1,5 @@
 use crate::components::position::Position;
-use crate::systems::area_gen::{GeneratedArea, AreaGenerationSystem};
+use crate::systems::area_gen::{AreaGenerationSystem, GeneratedArea};
 
 #[derive(Debug, Clone)]
 pub struct Area {
@@ -34,7 +34,11 @@ impl AreaEntity {
             width: 50,
             height: 50,
             recommended_level: 1,
-            keywords: vec!["beginner".to_string(), "town".to_string(), "safe".to_string()],
+            keywords: vec![
+                "beginner".to_string(),
+                "town".to_string(),
+                "safe".to_string(),
+            ],
             generated_area: None,
             spawn_points: vec![
                 Position::new(400.0, 300.0),

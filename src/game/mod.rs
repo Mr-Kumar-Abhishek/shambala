@@ -15,15 +15,15 @@
 //! | [`options_menu`] | Settings: audio sliders, controls, display |
 //! | [`progression`] | Level-up screen, skill trees per class |
 
-pub mod engine;
-pub mod scene;
-pub mod event;
-pub mod title_screen;
-pub mod character_select;
 pub mod chaos_gate;
-pub mod quest;
-pub mod save_load;
-pub mod network;
+pub mod character_select;
 pub mod dialogue;
+pub mod engine;
+pub mod event;
+pub mod network;
 pub mod options_menu;
 pub mod progression;
+pub mod quest;
+pub mod save_load;
+pub mod scene;
+pub mod title_screen;

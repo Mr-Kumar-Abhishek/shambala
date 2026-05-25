@@ -16,6 +16,12 @@ pub struct AudioClip {
 
 pub struct AudioSystem;
 
+impl Default for AudioSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AudioSystem {
     pub fn new() -> Self {
         Self
@@ -66,7 +72,10 @@ mod tests {
 
     #[test]
     fn test_music_for_area() {
-        assert_eq!(AudioSystem::get_music_for_area("root_town"), "bgm_root_town");
+        assert_eq!(
+            AudioSystem::get_music_for_area("root_town"),
+            "bgm_root_town"
+        );
         assert_eq!(AudioSystem::get_music_for_area("boss"), "bgm_boss");
         assert_eq!(AudioSystem::get_music_for_area("unknown"), "bgm_default");
     }

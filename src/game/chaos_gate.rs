@@ -12,6 +12,12 @@ pub struct ChaosGate {
     pub is_transitioning: bool,
 }
 
+impl Default for ChaosGate {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ChaosGate {
     pub fn new() -> Self {
         let keyword_sets = AreaEntity::get_area_keywords()
@@ -49,7 +55,8 @@ impl ChaosGate {
         if self.selected_keywords.len() < 3 {
             self.selected_keywords.push(keyword.to_string());
             if self.selected_keywords.len() < 3 {
-                self.current_set_index = (self.current_set_index + 1) % self.available_keyword_sets.len();
+                self.current_set_index =
+                    (self.current_set_index + 1) % self.available_keyword_sets.len();
                 self.current_keyword_index = 0;
             }
         }
@@ -58,7 +65,8 @@ impl ChaosGate {
     pub fn remove_last_keyword(&mut self) {
         self.selected_keywords.pop();
         if !self.selected_keywords.is_empty() {
-            self.current_set_index = (self.selected_keywords.len() - 1).min(self.available_keyword_sets.len() - 1);
+            self.current_set_index =
+                (self.selected_keywords.len() - 1).min(self.available_keyword_sets.len() - 1);
         }
     }
 
@@ -165,7 +173,7 @@ mod tests {
         gate.select_keyword("lake");
         gate.select_keyword("temple");
         gate.confirm_area(42);
-        
+
         // Simulate transition
         let mut progress = 0.0;
         while progress < 1.0 {

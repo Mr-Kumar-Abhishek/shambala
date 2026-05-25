@@ -28,16 +28,24 @@ pub struct InputSystem;
 
 impl InputSystem {
     pub fn is_movement_action(action: InputAction) -> bool {
-        matches!(action,
-            InputAction::MoveUp | InputAction::MoveDown |
-            InputAction::MoveLeft | InputAction::MoveRight
+        matches!(
+            action,
+            InputAction::MoveUp
+                | InputAction::MoveDown
+                | InputAction::MoveLeft
+                | InputAction::MoveRight
         )
     }
 
     pub fn is_combat_action(action: InputAction) -> bool {
-        matches!(action,
-            InputAction::Attack | InputAction::Skill1 | InputAction::Skill2 |
-            InputAction::Skill3 | InputAction::Skill4 | InputAction::DataDrain
+        matches!(
+            action,
+            InputAction::Attack
+                | InputAction::Skill1
+                | InputAction::Skill2
+                | InputAction::Skill3
+                | InputAction::Skill4
+                | InputAction::DataDrain
         )
     }
 

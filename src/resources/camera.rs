@@ -10,7 +10,11 @@ pub struct Camera {
 impl Camera {
     pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
         Self {
-            x, y, width, height, zoom: 1.0,
+            x,
+            y,
+            width,
+            height,
+            zoom: 1.0,
         }
     }
 
@@ -29,10 +33,7 @@ impl Camera {
     }
 
     pub fn screen_to_world(&self, screen_x: f32, screen_y: f32) -> (f32, f32) {
-        (
-            screen_x / self.zoom + self.x,
-            screen_y / self.zoom + self.y,
-        )
+        (screen_x / self.zoom + self.x, screen_y / self.zoom + self.y)
     }
 }
 

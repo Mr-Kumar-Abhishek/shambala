@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use serde::{Deserialize, Serialize};
 use crate::core::types::Class;
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SaveData {
@@ -54,6 +54,12 @@ pub struct SaveManager {
     pub save_slots: Vec<Option<String>>, // Slot index -> save file name
 }
 
+impl Default for SaveManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SaveManager {
     pub fn new() -> Self {
         let save_dir = dirs_path();
@@ -71,11 +77,12 @@ impl SaveManager {
             return Err("Invalid save slot".to_string());
         }
 
-        std::fs::create_dir_all(&self.save_dir).map_err(|e| format!("Failed to create save dir: {}", e))?;
+        std::fs::create_dir_all(&self.save_dir)
+            .map_err(|e| format!("Failed to create save dir: {}", e))?;
 
         let filename = format!("save_{}.ron", slot);
         let path = self.save_dir.join(&filename);
-        
+
         let ron_string = ron::to_string(data).map_err(|e| format!("Failed to serialize: {}", e))?;
         std::fs::write(&path, &ron_string).map_err(|e| format!("Failed to write save: {}", e))?;
 
@@ -97,8 +104,10 @@ impl SaveManager {
             return Err("Save file does not exist".to_string());
         }
 
-        let ron_string = std::fs::read_to_string(&path).map_err(|e| format!("Failed to read save: {}", e))?;
-        let data: SaveData = ron::from_str(&ron_string).map_err(|e| format!("Failed to deserialize: {}", e))?;
+        let ron_string =
+            std::fs::read_to_string(&path).map_err(|e| format!("Failed to read save: {}", e))?;
+        let data: SaveData =
+            ron::from_str(&ron_string).map_err(|e| format!("Failed to deserialize: {}", e))?;
 
         self.current_save = Some(data.clone());
         log::info!("Game loaded from slot {}", slot);
@@ -138,10 +147,11 @@ impl SaveManager {
             return None;
         }
         if let Ok(data) = self.load_from_slot(slot) {
-            Some(format!("{} - Lv.{} {} ({}h)",
+            Some(format!(
+                "{} - Lv.{} {:?} ({}h)",
                 data.player_name,
                 data.player_level,
-                format!("{:?}", data.player_class),
+                data.player_class,
                 (data.play_time_seconds / 3600.0) as u64,
             ))
         } else {
@@ -220,16 +230,16 @@ mod tests {
     fn test_save_roundtrip() {
         let mut manager = test_manager();
         let data = SaveData::new("Kite", Class::TwinBlade);
-        
+
         // Save
         assert!(manager.save_to_slot(1, &data).is_ok());
         assert!(manager.slot_has_data(1));
-        
+
         // Load
         let loaded = manager.load_from_slot(1).unwrap();
         assert_eq!(loaded.player_name, "Kite");
         assert_eq!(loaded.player_class, Class::TwinBlade);
-        
+
         // Cleanup
         let _ = manager.delete_slot(1);
         cleanup(&manager);
@@ -249,7 +259,9 @@ mod tests {
     #[test]
     fn test_invalid_slot() {
         let mut manager = test_manager();
-        assert!(manager.save_to_slot(99, &SaveData::new("T", Class::TwinBlade)).is_err());
+        assert!(manager
+            .save_to_slot(99, &SaveData::new("T", Class::TwinBlade))
+            .is_err());
         assert!(manager.load_from_slot(99).is_err());
         cleanup(&manager);
     }

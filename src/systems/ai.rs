@@ -16,7 +16,7 @@ pub enum AIState {
 impl AISystem {
     pub fn determine_state(enemy: &Enemy, enemy_pos: &Position, player_pos: &Position) -> AIState {
         let distance = enemy_pos.distance_to(player_pos);
-        
+
         if distance <= enemy.aggro_range * 0.5 {
             AIState::Attack
         } else if distance <= enemy.aggro_range {

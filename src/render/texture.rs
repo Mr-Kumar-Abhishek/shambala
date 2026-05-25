@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use image::GenericImageView;
+use std::collections::HashMap;
 use wgpu;
 
 pub struct TextureManager {
@@ -27,7 +27,8 @@ impl TextureManager {
     }
 
     pub fn load_from_bytes(&mut self, id: &str, bytes: &[u8]) -> Result<(), String> {
-        let img = image::load_from_memory(bytes).map_err(|e| format!("Failed to load image: {}", e))?;
+        let img =
+            image::load_from_memory(bytes).map_err(|e| format!("Failed to load image: {}", e))?;
         let dimensions = img.dimensions();
         let rgba = img.to_rgba8();
         let width = dimensions.0;
@@ -79,27 +80,29 @@ impl TextureManager {
             ..Default::default()
         });
 
-        let bind_group_layout = self.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some(&format!("bind_group_layout_{}", id)),
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        multisampled: false,
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                    count: None,
-                },
-            ],
-        });
+        let bind_group_layout =
+            self.device
+                .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                    label: Some(&format!("bind_group_layout_{}", id)),
+                    entries: &[
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 0,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Texture {
+                                multisampled: false,
+                                view_dimension: wgpu::TextureViewDimension::D2,
+                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                            },
+                            count: None,
+                        },
+                        wgpu::BindGroupLayoutEntry {
+                            binding: 1,
+                            visibility: wgpu::ShaderStages::FRAGMENT,
+                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                            count: None,
+                        },
+                    ],
+                });
 
         let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some(&format!("bind_group_{}", id)),
@@ -116,14 +119,17 @@ impl TextureManager {
             ],
         });
 
-        self.textures.insert(id.to_string(), TextureHandle {
-            texture,
-            view,
-            sampler,
-            width,
-            height,
-            bind_group,
-        });
+        self.textures.insert(
+            id.to_string(),
+            TextureHandle {
+                texture,
+                view,
+                sampler,
+                width,
+                height,
+                bind_group,
+            },
+        );
 
         Ok(())
     }
@@ -154,15 +160,14 @@ mod tests {
 
     #[test]
     fn test_texture_manager_creation() {
-        // This test verifies the module compiles
-        // Actual texture loading requires a GPU device
-        assert!(true, "Texture manager module compiles");
+        // This test verifies the module compiles.
+        // Actual texture loading requires a GPU device context.
     }
 
     #[test]
     fn test_texture_id_tracking() {
         // Test that we can track texture IDs without GPU
-        let ids = vec!["player_TwinBlade", "enemy_Goblin", "tile_floor"];
+        let ids = ["player_TwinBlade", "enemy_Goblin", "tile_floor"];
         assert_eq!(ids.len(), 3);
     }
 }

@@ -96,6 +96,12 @@ pub struct EffectsManager {
     pub screen_shakes: Vec<ScreenShake>,
 }
 
+impl Default for EffectsManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EffectsManager {
     pub fn new() -> Self {
         Self {
@@ -104,12 +110,21 @@ impl EffectsManager {
         }
     }
 
-    pub fn spawn_damage_number(&mut self, value: u32, x: f32, y: f32, is_critical: bool, is_heal: bool) {
-        self.damage_numbers.push(DamageNumber::new(value, x, y, is_critical, is_heal));
+    pub fn spawn_damage_number(
+        &mut self,
+        value: u32,
+        x: f32,
+        y: f32,
+        is_critical: bool,
+        is_heal: bool,
+    ) {
+        self.damage_numbers
+            .push(DamageNumber::new(value, x, y, is_critical, is_heal));
     }
 
     pub fn shake_screen(&mut self, intensity: f32, duration: f32) {
-        self.screen_shakes.push(ScreenShake::new(intensity, duration));
+        self.screen_shakes
+            .push(ScreenShake::new(intensity, duration));
     }
 
     pub fn update(&mut self, dt: f32) {

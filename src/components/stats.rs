@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::core::types::Class;
+use serde::{Deserialize, Serialize};
 
 /// Combat statistics for a character (player or enemy).
 ///
@@ -28,24 +28,64 @@ impl Stats {
     pub fn new(class: Class) -> Self {
         match class {
             Class::TwinBlade => Self {
-                level: 1, hp: 100, max_hp: 100, mp: 30, max_mp: 30,
-                attack: 15, defense: 8, magic_attack: 5, magic_defense: 6,
-                agility: 20, class, experience: 0, next_level_exp: 100,
+                level: 1,
+                hp: 100,
+                max_hp: 100,
+                mp: 30,
+                max_mp: 30,
+                attack: 15,
+                defense: 8,
+                magic_attack: 5,
+                magic_defense: 6,
+                agility: 20,
+                class,
+                experience: 0,
+                next_level_exp: 100,
             },
             Class::HeavyBlade => Self {
-                level: 1, hp: 150, max_hp: 150, mp: 20, max_mp: 20,
-                attack: 20, defense: 15, magic_attack: 3, magic_defense: 10,
-                agility: 8, class, experience: 0, next_level_exp: 100,
+                level: 1,
+                hp: 150,
+                max_hp: 150,
+                mp: 20,
+                max_mp: 20,
+                attack: 20,
+                defense: 15,
+                magic_attack: 3,
+                magic_defense: 10,
+                agility: 8,
+                class,
+                experience: 0,
+                next_level_exp: 100,
             },
             Class::LongArm => Self {
-                level: 1, hp: 90, max_hp: 90, mp: 40, max_mp: 40,
-                attack: 12, defense: 6, magic_attack: 12, magic_defense: 8,
-                agility: 15, class, experience: 0, next_level_exp: 100,
+                level: 1,
+                hp: 90,
+                max_hp: 90,
+                mp: 40,
+                max_mp: 40,
+                attack: 12,
+                defense: 6,
+                magic_attack: 12,
+                magic_defense: 8,
+                agility: 15,
+                class,
+                experience: 0,
+                next_level_exp: 100,
             },
             Class::Wavemaster => Self {
-                level: 1, hp: 70, max_hp: 70, mp: 80, max_mp: 80,
-                attack: 5, defense: 4, magic_attack: 20, magic_defense: 15,
-                agility: 12, class, experience: 0, next_level_exp: 100,
+                level: 1,
+                hp: 70,
+                max_hp: 70,
+                mp: 80,
+                max_mp: 80,
+                attack: 5,
+                defense: 4,
+                magic_attack: 20,
+                magic_defense: 15,
+                agility: 12,
+                class,
+                experience: 0,
+                next_level_exp: 100,
             },
         }
     }

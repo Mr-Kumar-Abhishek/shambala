@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::core::types::Element;
+use serde::{Deserialize, Serialize};
 
 /// A single skill/spell that a character can use in combat.
 ///
@@ -30,7 +30,14 @@ impl Skill {
     ///
     /// `cooldown` is the total cooldown in seconds; the skill starts
     /// ready to use.
-    pub fn new(id: &str, name: &str, element: Element, power: u32, mp_cost: u32, cooldown: f32) -> Self {
+    pub fn new(
+        id: &str,
+        name: &str,
+        element: Element,
+        power: u32,
+        mp_cost: u32,
+        cooldown: f32,
+    ) -> Self {
         Self {
             id: id.to_string(),
             name: name.to_string(),
@@ -111,8 +118,14 @@ mod tests {
     #[test]
     fn test_skill_set_full() {
         let mut set = SkillSet::new(2);
-        assert!(set.add_skill(Skill::new("a", "A", Element::Fire, 10, 5, 1.0)).is_ok());
-        assert!(set.add_skill(Skill::new("b", "B", Element::Water, 10, 5, 1.0)).is_ok());
-        assert!(set.add_skill(Skill::new("c", "C", Element::Wind, 10, 5, 1.0)).is_err());
+        assert!(set
+            .add_skill(Skill::new("a", "A", Element::Fire, 10, 5, 1.0))
+            .is_ok());
+        assert!(set
+            .add_skill(Skill::new("b", "B", Element::Water, 10, 5, 1.0))
+            .is_ok());
+        assert!(set
+            .add_skill(Skill::new("c", "C", Element::Wind, 10, 5, 1.0))
+            .is_err());
     }
 }

@@ -1,16 +1,13 @@
-use crate::components::position::Position;
-use crate::components::render::{Renderable, RenderLayer};
 use crate::components::inventory::{Item, ItemType};
+use crate::components::position::Position;
+use crate::components::render::{RenderLayer, Renderable};
 
 pub struct ItemEntity;
 
 impl ItemEntity {
     pub fn create(item: Item, x: f32, y: f32) -> (Item, Position, Renderable) {
         let position = Position::new(x, y);
-        let renderable = Renderable::new(
-            &format!("item_{}", item.id),
-            RenderLayer::Items,
-        );
+        let renderable = Renderable::new(&format!("item_{}", item.id), RenderLayer::Items);
         (item, position, renderable)
     }
 

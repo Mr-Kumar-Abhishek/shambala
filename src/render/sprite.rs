@@ -27,7 +27,8 @@ impl SpriteVertex {
                     format: wgpu::VertexFormat::Float32x2,
                 },
                 wgpu::VertexAttribute {
-                    offset: (std::mem::size_of::<[f32; 3]>() + std::mem::size_of::<[f32; 2]>()) as wgpu::BufferAddress,
+                    offset: (std::mem::size_of::<[f32; 3]>() + std::mem::size_of::<[f32; 2]>())
+                        as wgpu::BufferAddress,
                     shader_location: 2,
                     format: wgpu::VertexFormat::Float32x4,
                 },
@@ -50,6 +51,12 @@ pub struct SpriteBatch {
     pub sprites: Vec<SpriteInstance>,
 }
 
+impl Default for SpriteBatch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SpriteBatch {
     pub fn new() -> Self {
         Self {
@@ -66,25 +73,28 @@ impl SpriteBatch {
     }
 
     pub fn collect_visible(&self, camera: &Camera) -> Vec<&SpriteInstance> {
-        self.sprites.iter()
+        self.sprites
+            .iter()
             .filter(|s| s.visible)
             .filter(|s| {
                 let screen_x = s.position.x - camera.x;
                 let screen_y = s.position.y - camera.y;
                 let margin = 64.0;
-                screen_x >= -margin 
+                screen_x >= -margin
                     && screen_x <= camera.width + margin
-                    && screen_y >= -margin 
+                    && screen_y >= -margin
                     && screen_y <= camera.height + margin
             })
             .collect()
     }
 
     pub fn sort_by_layer(sprites: &mut Vec<&SpriteInstance>) {
-        sprites.sort_by(|a, b| a.layer.cmp(&b.layer));
+        sprites.sort_by_key(|a| a.layer);
     }
 
-    pub fn group_by_texture<'a>(sprites: &'a [&'a SpriteInstance]) -> Vec<(&'a str, Vec<&'a SpriteInstance>)> {
+    pub fn group_by_texture<'a>(
+        sprites: &'a [&'a SpriteInstance],
+    ) -> Vec<(&'a str, Vec<&'a SpriteInstance>)> {
         let mut groups: Vec<(&str, Vec<&SpriteInstance>)> = Vec::new();
         for sprite in sprites {
             let texture_id = sprite.texture_id.as_str();
@@ -168,14 +178,20 @@ mod tests {
     fn test_layer_sorting() {
         let mut batch = SpriteBatch::new();
         batch.add_sprite(SpriteInstance {
-            texture_id: "ui".to_string(), position: Position::new(0.0, 0.0),
-            size: (32.0, 32.0), layer: RenderLayer::UI,
-            color: [1.0, 1.0, 1.0, 1.0], visible: true,
+            texture_id: "ui".to_string(),
+            position: Position::new(0.0, 0.0),
+            size: (32.0, 32.0),
+            layer: RenderLayer::UI,
+            color: [1.0, 1.0, 1.0, 1.0],
+            visible: true,
         });
         batch.add_sprite(SpriteInstance {
-            texture_id: "bg".to_string(), position: Position::new(0.0, 0.0),
-            size: (32.0, 32.0), layer: RenderLayer::Background,
-            color: [1.0, 1.0, 1.0, 1.0], visible: true,
+            texture_id: "bg".to_string(),
+            position: Position::new(0.0, 0.0),
+            size: (32.0, 32.0),
+            layer: RenderLayer::Background,
+            color: [1.0, 1.0, 1.0, 1.0],
+            visible: true,
         });
 
         let camera = Camera::new(0.0, 0.0, 1280.0, 720.0);
@@ -189,19 +205,28 @@ mod tests {
     fn test_texture_grouping() {
         let mut batch = SpriteBatch::new();
         batch.add_sprite(SpriteInstance {
-            texture_id: "a".to_string(), position: Position::new(0.0, 0.0),
-            size: (32.0, 32.0), layer: RenderLayer::Characters,
-            color: [1.0, 1.0, 1.0, 1.0], visible: true,
+            texture_id: "a".to_string(),
+            position: Position::new(0.0, 0.0),
+            size: (32.0, 32.0),
+            layer: RenderLayer::Characters,
+            color: [1.0, 1.0, 1.0, 1.0],
+            visible: true,
         });
         batch.add_sprite(SpriteInstance {
-            texture_id: "b".to_string(), position: Position::new(0.0, 0.0),
-            size: (32.0, 32.0), layer: RenderLayer::Characters,
-            color: [1.0, 1.0, 1.0, 1.0], visible: true,
+            texture_id: "b".to_string(),
+            position: Position::new(0.0, 0.0),
+            size: (32.0, 32.0),
+            layer: RenderLayer::Characters,
+            color: [1.0, 1.0, 1.0, 1.0],
+            visible: true,
         });
         batch.add_sprite(SpriteInstance {
-            texture_id: "a".to_string(), position: Position::new(0.0, 0.0),
-            size: (32.0, 32.0), layer: RenderLayer::Characters,
-            color: [1.0, 1.0, 1.0, 1.0], visible: true,
+            texture_id: "a".to_string(),
+            position: Position::new(0.0, 0.0),
+            size: (32.0, 32.0),
+            layer: RenderLayer::Characters,
+            color: [1.0, 1.0, 1.0, 1.0],
+            visible: true,
         });
 
         let camera = Camera::new(0.0, 0.0, 1280.0, 720.0);

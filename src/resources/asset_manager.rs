@@ -16,6 +16,12 @@ pub struct AssetInfo {
     pub size_bytes: u64,
 }
 
+impl Default for AssetManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AssetManager {
     pub fn new() -> Self {
         Self {
@@ -28,11 +34,14 @@ impl AssetManager {
     }
 
     pub fn register_texture(&mut self, id: &str, path: &str) {
-        self.textures.insert(id.to_string(), AssetInfo {
-            path: path.to_string(),
-            loaded: false,
-            size_bytes: 0,
-        });
+        self.textures.insert(
+            id.to_string(),
+            AssetInfo {
+                path: path.to_string(),
+                loaded: false,
+                size_bytes: 0,
+            },
+        );
     }
 
     pub fn queue_loading(&mut self, asset_id: &str) {
@@ -52,8 +61,8 @@ impl AssetManager {
     }
 
     pub fn is_loaded(&self, asset_id: &str) -> bool {
-        self.textures.get(asset_id).map_or(false, |a| a.loaded)
-            || self.audio.get(asset_id).map_or(false, |a| a.loaded)
+        self.textures.get(asset_id).is_some_and(|a| a.loaded)
+            || self.audio.get(asset_id).is_some_and(|a| a.loaded)
     }
 
     pub fn loading_progress(&self) -> (usize, usize) {

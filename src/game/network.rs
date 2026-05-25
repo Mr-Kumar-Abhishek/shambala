@@ -1,5 +1,5 @@
-use std::collections::VecDeque;
 use crate::game::event::GameEvent;
+use std::collections::VecDeque;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConnectionState {
@@ -29,13 +29,19 @@ pub struct NetworkSimulator {
     pub disconnect_reason: Option<String>,
 }
 
+impl Default for NetworkSimulator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkSimulator {
     pub fn new() -> Self {
         Self {
             connection_state: ConnectionState::Disconnected,
             messages: VecDeque::new(),
             latency_ms: 100.0, // Simulated 100ms latency
-            packet_loss: 0.01,  // 1% packet loss
+            packet_loss: 0.01, // 1% packet loss
             message_counter: 0,
             server_events: Vec::new(),
             connect_timer: 0.0,
@@ -93,12 +99,10 @@ impl NetworkSimulator {
 
         // Deliver ready messages
         for msg in ready_messages {
-            if rand::random::<f32>() > self.packet_loss {
-                if msg.from_server {
-                    self.server_events.push(msg.event);
-                }
-                // Client messages would be handled here
+            if rand::random::<f32>() > self.packet_loss && msg.from_server {
+                self.server_events.push(msg.event);
             }
+            // Client messages would be handled here
         }
     }
 
@@ -110,7 +114,7 @@ impl NetworkSimulator {
 
         self.message_counter += 1;
         let delay = self.latency_ms / 1000.0;
-        
+
         self.messages.push_back(NetworkMessage {
             id: self.message_counter,
             event,
@@ -199,7 +203,7 @@ mod tests {
         net.connect();
         net.update(2.5);
         assert!(net.is_connected());
-        
+
         net.disconnect("User quit");
         net.update(0.1);
         assert_eq!(net.connection_state, ConnectionState::Disconnected);
@@ -210,7 +214,7 @@ mod tests {
         let mut net = NetworkSimulator::new();
         net.connect();
         net.update(2.5);
-        
+
         net.send_event(GameEvent::PlayerDamaged {
             amount: 10,
             source: "Goblin".to_string(),
@@ -230,7 +234,7 @@ mod tests {
         let mut net = NetworkSimulator::new();
         net.connect();
         net.update(2.5);
-        
+
         let events = net.receive_server_events();
         assert_eq!(events.len(), 1); // Welcome event
         assert!(matches!(events[0], GameEvent::AreaTransition { .. }));

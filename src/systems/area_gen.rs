@@ -90,7 +90,11 @@ impl AreaGenerationSystem {
         area.tiles[y][x].walkable
     }
 
-    pub fn find_path(area: &GeneratedArea, start: (usize, usize), end: (usize, usize)) -> Option<Vec<(usize, usize)>> {
+    pub fn find_path(
+        area: &GeneratedArea,
+        start: (usize, usize),
+        end: (usize, usize),
+    ) -> Option<Vec<(usize, usize)>> {
         // Simple BFS pathfinding
         let mut visited = vec![vec![false; area.width]; area.height];
         let mut queue = VecDeque::new();
@@ -121,7 +125,11 @@ impl AreaGenerationSystem {
             ];
 
             for (nx, ny) in neighbors {
-                if nx < area.width && ny < area.height && !visited[ny][nx] && area.tiles[ny][nx].walkable {
+                if nx < area.width
+                    && ny < area.height
+                    && !visited[ny][nx]
+                    && area.tiles[ny][nx].walkable
+                {
                     visited[ny][nx] = true;
                     parent.insert((nx, ny), current);
                     queue.push_back((nx, ny));
@@ -142,8 +150,14 @@ mod tests {
         let area = AreaGenerationSystem::generate_area(20, 20, 42);
         assert_eq!(area.width, 20);
         assert_eq!(area.height, 20);
-        assert_eq!(area.tiles[area.entrance.1][area.entrance.0].tile_type, TileType::Entrance);
-        assert_eq!(area.tiles[area.exit.1][area.exit.0].tile_type, TileType::Exit);
+        assert_eq!(
+            area.tiles[area.entrance.1][area.entrance.0].tile_type,
+            TileType::Entrance
+        );
+        assert_eq!(
+            area.tiles[area.exit.1][area.exit.0].tile_type,
+            TileType::Exit
+        );
     }
 
     #[test]

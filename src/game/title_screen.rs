@@ -1,7 +1,7 @@
-use crate::core::types::GameState;
 use crate::core::game_state::GameStateManager;
-use crate::systems::input::InputAction;
+use crate::core::types::GameState;
 use crate::resources::input_state::InputStateResource;
+use crate::systems::input::InputAction;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MenuOption {
@@ -13,7 +13,12 @@ pub enum MenuOption {
 
 impl MenuOption {
     pub fn all() -> &'static [MenuOption] {
-        &[MenuOption::NewGame, MenuOption::Continue, MenuOption::Options, MenuOption::Quit]
+        &[
+            MenuOption::NewGame,
+            MenuOption::Continue,
+            MenuOption::Options,
+            MenuOption::Quit,
+        ]
     }
 
     pub fn label(&self) -> &'static str {
@@ -41,6 +46,12 @@ pub struct TitleScreen {
     pub visible: bool,
     pub transition_timer: f32,
     pub title_animation_progress: f32,
+}
+
+impl Default for TitleScreen {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl TitleScreen {

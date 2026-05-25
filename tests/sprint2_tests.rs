@@ -1,17 +1,17 @@
-use shambala::game::title_screen::{TitleScreen, MenuOption};
-use shambala::game::chaos_gate::ChaosGate;
-use shambala::game::quest::QuestManager;
-use shambala::game::event::QuestStatus;
-use shambala::game::engine::GameEngine;
-use shambala::render::sprite::{SpriteBatch, SpriteInstance};
-use shambala::render::tilemap::Tilemap;
-use shambala::render::ui_render::UIRenderer;
-use shambala::render::text::TextRenderer;
 use shambala::components::position::Position;
 use shambala::components::render::RenderLayer;
+use shambala::core::types::GameState;
+use shambala::game::chaos_gate::ChaosGate;
+use shambala::game::engine::GameEngine;
+use shambala::game::event::QuestStatus;
+use shambala::game::quest::QuestManager;
+use shambala::game::title_screen::{MenuOption, TitleScreen};
+use shambala::render::sprite::{SpriteBatch, SpriteInstance};
+use shambala::render::text::TextRenderer;
+use shambala::render::tilemap::Tilemap;
+use shambala::render::ui_render::UIRenderer;
 use shambala::resources::camera::Camera;
 use shambala::systems::area_gen::AreaGenerationSystem;
-use shambala::core::types::GameState;
 
 #[test]
 fn test_title_to_character_select_flow() {
@@ -145,16 +145,28 @@ fn test_ui_renderer_with_hud() {
     // Add HUD elements
     renderer.add_element(shambala::systems::ui::UIElement {
         id: "hp_bar".to_string(),
-        x: 20.0, y: 20.0, width: 200.0, height: 20.0,
+        x: 20.0,
+        y: 20.0,
+        width: 200.0,
+        height: 20.0,
         visible: true,
-        element_type: shambala::systems::ui::UIElementType::ProgressBar { current: 75.0, max: 100.0 },
+        element_type: shambala::systems::ui::UIElementType::ProgressBar {
+            current: 75.0,
+            max: 100.0,
+        },
     });
 
     renderer.add_element(shambala::systems::ui::UIElement {
         id: "mp_bar".to_string(),
-        x: 20.0, y: 45.0, width: 200.0, height: 20.0,
+        x: 20.0,
+        y: 45.0,
+        width: 200.0,
+        height: 20.0,
         visible: true,
-        element_type: shambala::systems::ui::UIElementType::ProgressBar { current: 50.0, max: 100.0 },
+        element_type: shambala::systems::ui::UIElementType::ProgressBar {
+            current: 50.0,
+            max: 100.0,
+        },
     });
 
     assert_eq!(renderer.get_visible_elements().len(), 2);

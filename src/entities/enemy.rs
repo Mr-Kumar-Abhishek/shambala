@@ -1,8 +1,8 @@
 use crate::components::enemy::{Enemy, EnemyType};
-use crate::components::position::Position;
-use crate::components::stats::Stats;
-use crate::components::render::{Renderable, RenderLayer};
 use crate::components::inventory::Item;
+use crate::components::position::Position;
+use crate::components::render::{RenderLayer, Renderable};
+use crate::components::stats::Stats;
 use crate::core::types::Class;
 
 pub struct EnemyEntity;
@@ -12,10 +12,8 @@ impl EnemyEntity {
         let enemy = Enemy::new(enemy_type);
         let stats = Self::create_stats(enemy_type);
         let position = Position::new(x, y);
-        let renderable = Renderable::new(
-            &format!("enemy_{:?}", enemy_type),
-            RenderLayer::Characters,
-        );
+        let renderable =
+            Renderable::new(&format!("enemy_{:?}", enemy_type), RenderLayer::Characters);
 
         (enemy, stats, position, renderable)
     }
@@ -24,30 +22,41 @@ impl EnemyEntity {
         let mut stats = Stats::new(Class::HeavyBlade);
         match enemy_type {
             EnemyType::Goblin => {
-                stats.hp = 30; stats.max_hp = 30;
-                stats.attack = 8; stats.defense = 4;
+                stats.hp = 30;
+                stats.max_hp = 30;
+                stats.attack = 8;
+                stats.defense = 4;
                 stats.experience = 15;
             }
             EnemyType::Wolf => {
-                stats.hp = 25; stats.max_hp = 25;
-                stats.attack = 12; stats.defense = 3;
+                stats.hp = 25;
+                stats.max_hp = 25;
+                stats.attack = 12;
+                stats.defense = 3;
                 stats.agility = 25;
                 stats.experience = 20;
             }
             EnemyType::Skeleton => {
-                stats.hp = 45; stats.max_hp = 45;
-                stats.attack = 10; stats.defense = 8;
+                stats.hp = 45;
+                stats.max_hp = 45;
+                stats.attack = 10;
+                stats.defense = 8;
                 stats.experience = 30;
             }
             EnemyType::Mage => {
-                stats.hp = 20; stats.max_hp = 20;
-                stats.magic_attack = 18; stats.magic_defense = 10;
+                stats.hp = 20;
+                stats.max_hp = 20;
+                stats.magic_attack = 18;
+                stats.magic_defense = 10;
                 stats.experience = 35;
             }
             EnemyType::Boss => {
-                stats.hp = 500; stats.max_hp = 500;
-                stats.attack = 30; stats.defense = 20;
-                stats.magic_attack = 25; stats.magic_defense = 20;
+                stats.hp = 500;
+                stats.max_hp = 500;
+                stats.attack = 30;
+                stats.defense = 20;
+                stats.magic_attack = 25;
+                stats.magic_defense = 20;
                 stats.level = 10;
                 stats.experience = 500;
             }
@@ -57,21 +66,49 @@ impl EnemyEntity {
 
     pub fn get_drop_table(enemy_type: EnemyType) -> Vec<Item> {
         match enemy_type {
-            EnemyType::Goblin => vec![
-                Item { id: "goblin_ear".to_string(), name: "Goblin Ear".to_string(), quantity: 1, max_stack: 99, item_type: crate::components::inventory::ItemType::Material },
-            ],
-            EnemyType::Wolf => vec![
-                Item { id: "wolf_fang".to_string(), name: "Wolf Fang".to_string(), quantity: 1, max_stack: 99, item_type: crate::components::inventory::ItemType::Material },
-            ],
-            EnemyType::Skeleton => vec![
-                Item { id: "bone_fragment".to_string(), name: "Bone Fragment".to_string(), quantity: 1, max_stack: 99, item_type: crate::components::inventory::ItemType::Material },
-            ],
-            EnemyType::Mage => vec![
-                Item { id: "magic_crystal".to_string(), name: "Magic Crystal".to_string(), quantity: 1, max_stack: 99, item_type: crate::components::inventory::ItemType::Material },
-            ],
+            EnemyType::Goblin => vec![Item {
+                id: "goblin_ear".to_string(),
+                name: "Goblin Ear".to_string(),
+                quantity: 1,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Material,
+            }],
+            EnemyType::Wolf => vec![Item {
+                id: "wolf_fang".to_string(),
+                name: "Wolf Fang".to_string(),
+                quantity: 1,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Material,
+            }],
+            EnemyType::Skeleton => vec![Item {
+                id: "bone_fragment".to_string(),
+                name: "Bone Fragment".to_string(),
+                quantity: 1,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Material,
+            }],
+            EnemyType::Mage => vec![Item {
+                id: "magic_crystal".to_string(),
+                name: "Magic Crystal".to_string(),
+                quantity: 1,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Material,
+            }],
             EnemyType::Boss => vec![
-                Item { id: "boss_core".to_string(), name: "Boss Core".to_string(), quantity: 1, max_stack: 1, item_type: crate::components::inventory::ItemType::KeyItem },
-                Item { id: "rare_weapon".to_string(), name: "Rare Weapon".to_string(), quantity: 1, max_stack: 1, item_type: crate::components::inventory::ItemType::Weapon },
+                Item {
+                    id: "boss_core".to_string(),
+                    name: "Boss Core".to_string(),
+                    quantity: 1,
+                    max_stack: 1,
+                    item_type: crate::components::inventory::ItemType::KeyItem,
+                },
+                Item {
+                    id: "rare_weapon".to_string(),
+                    name: "Rare Weapon".to_string(),
+                    quantity: 1,
+                    max_stack: 1,
+                    item_type: crate::components::inventory::ItemType::Weapon,
+                },
             ],
         }
     }
@@ -105,7 +142,13 @@ mod tests {
 
     #[test]
     fn test_all_enemies_have_drops() {
-        for e in &[EnemyType::Goblin, EnemyType::Wolf, EnemyType::Skeleton, EnemyType::Mage, EnemyType::Boss] {
+        for e in &[
+            EnemyType::Goblin,
+            EnemyType::Wolf,
+            EnemyType::Skeleton,
+            EnemyType::Mage,
+            EnemyType::Boss,
+        ] {
             let drops = EnemyEntity::get_drop_table(*e);
             assert!(!drops.is_empty(), "{:?} has no drops", e);
         }

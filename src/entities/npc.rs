@@ -1,6 +1,6 @@
-use crate::components::position::Position;
-use crate::components::render::{Renderable, RenderLayer};
 use crate::components::inventory::Item;
+use crate::components::position::Position;
+use crate::components::render::{RenderLayer, Renderable};
 
 #[derive(Debug, Clone)]
 pub struct NPC {
@@ -32,10 +32,7 @@ impl NPCEntity {
             shop_items: Vec::new(),
         };
         let position = Position::new(x, y);
-        let renderable = Renderable::new(
-            &format!("npc_{:?}", npc_type),
-            RenderLayer::Characters,
-        );
+        let renderable = Renderable::new(&format!("npc_{:?}", npc_type), RenderLayer::Characters);
 
         (npc, position, renderable)
     }
@@ -43,9 +40,27 @@ impl NPCEntity {
     pub fn create_shopkeeper(name: &str, x: f32, y: f32) -> (NPC, Position, Renderable) {
         let (mut npc, pos, render) = Self::create(NPCType::Shopkeeper, name, x, y);
         npc.shop_items = vec![
-            Item { id: "potion".to_string(), name: "Potion".to_string(), quantity: 99, max_stack: 99, item_type: crate::components::inventory::ItemType::Consumable },
-            Item { id: "ether".to_string(), name: "Ether".to_string(), quantity: 99, max_stack: 99, item_type: crate::components::inventory::ItemType::Consumable },
-            Item { id: "antidote".to_string(), name: "Antidote".to_string(), quantity: 99, max_stack: 99, item_type: crate::components::inventory::ItemType::Consumable },
+            Item {
+                id: "potion".to_string(),
+                name: "Potion".to_string(),
+                quantity: 99,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Consumable,
+            },
+            Item {
+                id: "ether".to_string(),
+                name: "Ether".to_string(),
+                quantity: 99,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Consumable,
+            },
+            Item {
+                id: "antidote".to_string(),
+                name: "Antidote".to_string(),
+                quantity: 99,
+                max_stack: 99,
+                item_type: crate::components::inventory::ItemType::Consumable,
+            },
         ];
         (npc, pos, render)
     }

@@ -1,5 +1,5 @@
-use crate::components::stats::Stats;
 use crate::components::skill::Skill;
+use crate::components::stats::Stats;
 
 pub struct CombatSystem;
 
@@ -13,7 +13,7 @@ impl CombatSystem {
 
         let defense = defender.defense;
         let raw_damage = base_attack.saturating_sub(defense / 2);
-        
+
         // Minimum damage of 1
         std::cmp::max(raw_damage, 1)
     }

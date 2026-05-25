@@ -1,12 +1,12 @@
-use shambala::game::character_select::CharacterSelectScreen;
-use shambala::game::save_load::{SaveManager, SaveData};
-use shambala::game::network::NetworkSimulator;
-use shambala::systems::animation::{Animation, AnimationManager};
-use shambala::systems::effects::EffectsManager;
-use shambala::render::atlas::TextureAtlas;
-use shambala::systems::audio_playback::{AudioPlaybackSystem, AudioTrackType};
 use shambala::core::types::Class;
+use shambala::game::character_select::CharacterSelectScreen;
 use shambala::game::event::GameEvent;
+use shambala::game::network::NetworkSimulator;
+use shambala::game::save_load::{SaveData, SaveManager};
+use shambala::render::atlas::TextureAtlas;
+use shambala::systems::animation::{Animation, AnimationManager};
+use shambala::systems::audio_playback::{AudioPlaybackSystem, AudioTrackType};
+use shambala::systems::effects::EffectsManager;
 
 // ---------------------------------------------------------------------------
 // Helper: unique test directory for save/load tests to avoid file-system
@@ -137,7 +137,7 @@ fn test_effects_lifecycle() {
     // Spawn effects
     effects.spawn_damage_number(50, 100.0, 100.0, false, false);
     effects.spawn_damage_number(999, 200.0, 100.0, true, false); // Critical
-    effects.spawn_damage_number(30, 150.0, 150.0, false, true);  // Heal
+    effects.spawn_damage_number(30, 150.0, 150.0, false, true); // Heal
     effects.shake_screen(10.0, 0.5);
 
     assert_eq!(effects.damage_count(), 3);

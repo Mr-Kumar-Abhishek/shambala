@@ -35,14 +35,25 @@ impl TextureAtlas {
         let uv_w = width as f32 / self.atlas_width as f32;
         let uv_h = height as f32 / self.atlas_height as f32;
 
-        self.regions.insert(id.to_string(), AtlasRegion {
-            x, y, width, height,
-            uv_x, uv_y, uv_w, uv_h,
-        });
+        self.regions.insert(
+            id.to_string(),
+            AtlasRegion {
+                x,
+                y,
+                width,
+                height,
+                uv_x,
+                uv_y,
+                uv_w,
+                uv_h,
+            },
+        );
     }
 
     pub fn get_uv(&self, id: &str) -> Option<(f32, f32, f32, f32)> {
-        self.regions.get(id).map(|r| (r.uv_x, r.uv_y, r.uv_w, r.uv_h))
+        self.regions
+            .get(id)
+            .map(|r| (r.uv_x, r.uv_y, r.uv_w, r.uv_h))
     }
 
     pub fn get_region(&self, id: &str) -> Option<&AtlasRegion> {
@@ -59,32 +70,25 @@ impl TextureAtlas {
 
     pub fn create_sprite_atlas() -> Self {
         let mut atlas = TextureAtlas::new("sprite_atlas", 512, 512);
-        
+
         // Player sprites (4 classes, 32x32 each)
         let classes = ["TwinBlade", "HeavyBlade", "LongArm", "Wavemaster"];
         for (i, class) in classes.iter().enumerate() {
-            atlas.add_region(
-                &format!("player_{}", class),
-                0, (i as u32) * 32, 32, 32,
-            );
+            atlas.add_region(&format!("player_{}", class), 0, (i as u32) * 32, 32, 32);
         }
 
         // Enemy sprites (5 types, 32x32 each)
         let enemies = ["Goblin", "Wolf", "Skeleton", "Mage", "Boss"];
         for (i, enemy) in enemies.iter().enumerate() {
-            atlas.add_region(
-                &format!("enemy_{}", enemy),
-                64, (i as u32) * 32, 32, 32,
-            );
+            atlas.add_region(&format!("enemy_{}", enemy), 64, (i as u32) * 32, 32, 32);
         }
 
         // Tile sprites (8 types, 32x32 each)
-        let tiles = ["floor", "wall", "water", "grass", "path", "entrance", "exit", "treasure"];
+        let tiles = [
+            "floor", "wall", "water", "grass", "path", "entrance", "exit", "treasure",
+        ];
         for (i, tile) in tiles.iter().enumerate() {
-            atlas.add_region(
-                &format!("tile_{}", tile),
-                128, (i as u32) * 32, 32, 32,
-            );
+            atlas.add_region(&format!("tile_{}", tile), 128, (i as u32) * 32, 32, 32);
         }
 
         atlas
@@ -115,8 +119,8 @@ mod tests {
         let mut atlas = TextureAtlas::new("test", 256, 256);
         atlas.add_region("sprite", 0, 0, 32, 32);
         let uv = atlas.get_uv("sprite").unwrap();
-        assert!((uv.0 - 0.0).abs() < f32::EPSILON);  // uv_x
-        assert!((uv.1 - 0.0).abs() < f32::EPSILON);  // uv_y
+        assert!((uv.0 - 0.0).abs() < f32::EPSILON); // uv_x
+        assert!((uv.1 - 0.0).abs() < f32::EPSILON); // uv_y
         assert!((uv.2 - 0.125).abs() < f32::EPSILON); // uv_w = 32/256
         assert!((uv.3 - 0.125).abs() < f32::EPSILON); // uv_h = 32/256
     }

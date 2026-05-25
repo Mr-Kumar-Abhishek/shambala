@@ -1,12 +1,12 @@
-use crate::components::stats::Stats;
-use crate::components::skill::Skill;
 use crate::components::data_drain::DataDrain;
+use crate::components::skill::Skill;
+use crate::components::stats::Stats;
+use crate::game::event::{EventBus, GameEvent};
+use crate::systems::animation::AnimationManager;
+use crate::systems::audio_playback::AudioPlaybackSystem;
 use crate::systems::combat::CombatSystem;
 use crate::systems::data_drain::DataDrainSystem;
 use crate::systems::effects::EffectsManager;
-use crate::systems::animation::AnimationManager;
-use crate::systems::audio_playback::AudioPlaybackSystem;
-use crate::game::event::{EventBus, GameEvent};
 
 pub struct CombatEncounter {
     pub player_stats: Stats,
@@ -104,10 +104,16 @@ impl CombatEncounter {
         result
     }
 
-    pub fn execute_data_drain(&mut self, data_drain: &mut DataDrain) -> (CombatActionResult, crate::systems::data_drain::DataDrainResult) {
+    pub fn execute_data_drain(
+        &mut self,
+        data_drain: &mut DataDrain,
+    ) -> (
+        CombatActionResult,
+        crate::systems::data_drain::DataDrainResult,
+    ) {
         let hp_percentage = self.enemy_stats.hp as f32 / self.enemy_stats.max_hp as f32;
         let drain_result = DataDrainSystem::execute_drain(data_drain, hp_percentage);
-        
+
         let action_result = CombatActionResult {
             damage: 0,
             is_critical: false,
@@ -118,7 +124,8 @@ impl CombatEncounter {
         };
 
         if drain_result.success {
-            self.combat_log.push("Data Drain successful! Gained data fragment.".to_string());
+            self.combat_log
+                .push("Data Drain successful! Gained data fragment.".to_string());
             self.enemy_stats.hp = 0;
             self.is_active = false;
         }
@@ -183,13 +190,7 @@ impl CombatIntegrationSystem {
         }
 
         // Spawn damage number
-        effects.spawn_damage_number(
-            result.damage,
-            target_x,
-            target_y,
-            result.is_critical,
-            false,
-        );
+        effects.spawn_damage_number(result.damage, target_x, target_y, result.is_critical, false);
 
         // Play animation
         if result.source == "player" {
@@ -245,7 +246,7 @@ mod tests {
         let enemy = Stats::new(Class::Wavemaster);
         let mut encounter = CombatEncounter::new(player, enemy);
         let initial_hp = encounter.enemy_stats.hp;
-        
+
         let result = encounter.player_attack(None);
         assert!(result.is_valid());
         assert!(result.damage > 0);
@@ -259,7 +260,7 @@ mod tests {
         let enemy = Stats::new(Class::TwinBlade);
         let mut encounter = CombatEncounter::new(player, enemy);
         encounter.is_player_turn = false;
-        
+
         let initial_hp = encounter.player_stats.hp;
         let result = encounter.enemy_attack();
         assert!(result.is_valid());
@@ -272,7 +273,7 @@ mod tests {
         let mut enemy = Stats::new(Class::Wavemaster);
         enemy.hp = 10; // Low HP for quick test
         let mut encounter = CombatEncounter::new(player, enemy);
-        
+
         // Player attacks until enemy is defeated
         let mut player_won = false;
         while encounter.is_active {
@@ -283,7 +284,7 @@ mod tests {
                 }
             }
         }
-        
+
         assert!(player_won);
         assert!(encounter.is_over());
         assert!(encounter.player_won());
@@ -296,7 +297,7 @@ mod tests {
         let mut enemy = Stats::new(Class::Wavemaster);
         enemy.hp = 5;
         let mut encounter = CombatEncounter::new(player, enemy);
-        
+
         encounter.player_attack(None);
         assert!(!encounter.get_log().is_empty());
         assert!(encounter.get_log()[0].contains("damage"));
@@ -315,7 +316,7 @@ mod tests {
         let mut encounter = CombatEncounter::new(player, enemy);
         let mut data_drain = DataDrain::new();
         data_drain.charge(100.0); // Fully charged
-        
+
         let (action, drain) = encounter.execute_data_drain(&mut data_drain);
         assert!(action.is_valid());
         assert!(drain.exp_bonus > 0 || drain.success);
@@ -327,7 +328,7 @@ mod tests {
         let mut animations = AnimationManager::new();
         let mut audio = AudioPlaybackSystem::new();
         let mut event_bus = EventBus::new(100);
-        
+
         let result = CombatActionResult {
             damage: 50,
             is_critical: true,
@@ -336,11 +337,17 @@ mod tests {
             source: "player".to_string(),
             skill_name: None,
         };
-        
+
         CombatIntegrationSystem::process_combat_result(
-            &result, &mut effects, &mut animations, &mut audio, &mut event_bus, 100.0, 100.0,
+            &result,
+            &mut effects,
+            &mut animations,
+            &mut audio,
+            &mut event_bus,
+            100.0,
+            100.0,
         );
-        
+
         assert_eq!(effects.damage_count(), 1);
         assert_eq!(effects.screen_shakes.len(), 1);
     }

@@ -84,7 +84,10 @@ impl Animation {
         if self.frames.is_empty() {
             (0.0, 0.0)
         } else {
-            (self.frames[self.current_frame].offset_x, self.frames[self.current_frame].offset_y)
+            (
+                self.frames[self.current_frame].offset_x,
+                self.frames[self.current_frame].offset_y,
+            )
         }
     }
 
@@ -114,12 +117,19 @@ impl Animation {
             return 1.0;
         }
         let total_frames = self.frames.len() as f32;
-        (self.current_frame as f32 + self.frame_timer / self.frames[self.current_frame].duration) / total_frames
+        (self.current_frame as f32 + self.frame_timer / self.frames[self.current_frame].duration)
+            / total_frames
     }
 }
 
 pub struct AnimationManager {
     pub animations: Vec<Animation>,
+}
+
+impl Default for AnimationManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AnimationManager {
@@ -285,7 +295,7 @@ mod tests {
         let mut manager = AnimationManager::new();
         manager.add_animation(AnimationManager::create_idle_animation("TwinBlade"));
         assert_eq!(manager.animations.len(), 1);
-        
+
         manager.update(1.0);
         assert!(manager.get("idle_TwinBlade").is_some());
     }

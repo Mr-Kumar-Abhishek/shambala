@@ -21,18 +21,18 @@
 //! | [`combat_integration`] | Turn-based combat encounters and VFX |
 //! | [`exploration`] | Player movement, camera, collision, enemy proximity |
 
-pub mod input;
-pub mod render;
-pub mod physics;
-pub mod combat;
 pub mod ai;
-pub mod party;
-pub mod data_drain;
+pub mod animation;
 pub mod area_gen;
-pub mod ui;
 pub mod audio;
 pub mod audio_playback;
-pub mod animation;
-pub mod effects;
+pub mod combat;
 pub mod combat_integration;
+pub mod data_drain;
+pub mod effects;
 pub mod exploration;
+pub mod input;
+pub mod party;
+pub mod physics;
+pub mod render;
+pub mod ui;

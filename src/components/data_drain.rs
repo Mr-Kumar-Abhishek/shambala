@@ -103,6 +103,12 @@ impl DataDrain {
     }
 }
 
+impl Default for DataDrain {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

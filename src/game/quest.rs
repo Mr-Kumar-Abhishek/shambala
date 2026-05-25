@@ -63,6 +63,12 @@ pub struct QuestManager {
     pub completed_quests: Vec<String>,
 }
 
+impl Default for QuestManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl QuestManager {
     pub fn new() -> Self {
         Self {
@@ -92,7 +98,8 @@ impl QuestManager {
     pub fn update_objective(&mut self, quest_id: &str, objective_id: &str, amount: u32) {
         if let Some(quest) = self.quests.iter_mut().find(|q| q.id == quest_id) {
             if let Some(objective) = quest.objectives.iter_mut().find(|o| o.id == objective_id) {
-                objective.current_amount = (objective.current_amount + amount).min(objective.required_amount);
+                objective.current_amount =
+                    (objective.current_amount + amount).min(objective.required_amount);
                 if objective.current_amount >= objective.required_amount {
                     objective.is_complete = true;
                 }
@@ -111,12 +118,17 @@ impl QuestManager {
     }
 
     pub fn get_active_quests(&self) -> Vec<&Quest> {
-        self.quests.iter()
+        self.quests
+            .iter()
             .filter(|q| self.active_quests.contains(&q.id))
             .collect()
     }
 
-    pub fn get_dialogue_for_quest(&self, quest_id: &str, is_completion: bool) -> Option<&[DialogueNode]> {
+    pub fn get_dialogue_for_quest(
+        &self,
+        quest_id: &str,
+        is_completion: bool,
+    ) -> Option<&[DialogueNode]> {
         if let Some(quest) = self.get_quest(quest_id) {
             if is_completion {
                 Some(&quest.dialogue_on_complete)
@@ -262,7 +274,7 @@ mod tests {
         let quest_id = quest.id.clone();
         manager.register_quest(quest);
         manager.start_quest(&quest_id).unwrap();
-        
+
         manager.update_objective(&quest_id, "talk_to_helba", 1);
         let quest = manager.get_quest(&quest_id).unwrap();
         assert!(quest.objectives[0].is_complete);
@@ -275,12 +287,12 @@ mod tests {
         let quest_id = quest.id.clone();
         manager.register_quest(quest);
         manager.start_quest(&quest_id).unwrap();
-        
+
         // Complete all objectives
         manager.update_objective(&quest_id, "talk_to_helba", 1);
         manager.update_objective(&quest_id, "use_chaos_gate", 1);
         manager.update_objective(&quest_id, "defeat_goblins", 3);
-        
+
         let quest = manager.get_quest(&quest_id).unwrap();
         assert_eq!(quest.status, QuestStatus::Completed);
         assert!(manager.active_quests.is_empty());
@@ -294,7 +306,7 @@ mod tests {
         let quest_id = quest.id.clone();
         manager.register_quest(quest);
         manager.start_quest(&quest_id).unwrap();
-        
+
         let active = manager.get_active_quests();
         assert_eq!(active.len(), 1);
     }

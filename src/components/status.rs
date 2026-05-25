@@ -13,6 +13,12 @@ pub struct StatusEffects {
     pub effects: Vec<StatusEffectInstance>,
 }
 
+impl Default for StatusEffects {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StatusEffects {
     pub fn new() -> Self {
         Self {

@@ -23,9 +23,7 @@ impl RenderSystem {
 
     pub fn sort_by_layer(renderables: &[(Position, Renderable)]) -> Vec<usize> {
         let mut indices: Vec<usize> = (0..renderables.len()).collect();
-        indices.sort_by(|&a, &b| {
-            renderables[a].1.layer.cmp(&renderables[b].1.layer)
-        });
+        indices.sort_by(|&a, &b| renderables[a].1.layer.cmp(&renderables[b].1.layer));
         indices
     }
 }
@@ -65,9 +63,18 @@ mod tests {
     #[test]
     fn test_sort_by_layer() {
         let items = vec![
-            (Position::new(0.0, 0.0), Renderable::new("bg", RenderLayer::Background)),
-            (Position::new(0.0, 0.0), Renderable::new("char", RenderLayer::Characters)),
-            (Position::new(0.0, 0.0), Renderable::new("ui", RenderLayer::UI)),
+            (
+                Position::new(0.0, 0.0),
+                Renderable::new("bg", RenderLayer::Background),
+            ),
+            (
+                Position::new(0.0, 0.0),
+                Renderable::new("char", RenderLayer::Characters),
+            ),
+            (
+                Position::new(0.0, 0.0),
+                Renderable::new("ui", RenderLayer::UI),
+            ),
         ];
         let sorted = RenderSystem::sort_by_layer(&items);
         assert_eq!(sorted, vec![0, 1, 2]);

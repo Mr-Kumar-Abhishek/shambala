@@ -23,26 +23,33 @@ impl<'window> RenderPipeline<'window> {
         let surface = instance.create_surface(window)?;
 
         // Request adapter
-        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::HighPerformance,
-            compatible_surface: Some(&surface),
-            ..Default::default()
-        }).await.ok_or_else(|| anyhow::anyhow!("No suitable GPU adapter found"))?;
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                compatible_surface: Some(&surface),
+                ..Default::default()
+            })
+            .await
+            .ok_or_else(|| anyhow::anyhow!("No suitable GPU adapter found"))?;
 
         // Request device and queue
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                label: Some("Render Device"),
-                required_features: wgpu::Features::empty(),
-                required_limits: wgpu::Limits::default(),
-                memory_hints: wgpu::MemoryHints::Performance,
-            },
-            None,
-        ).await?;
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    label: Some("Render Device"),
+                    required_features: wgpu::Features::empty(),
+                    required_limits: wgpu::Limits::default(),
+                    memory_hints: wgpu::MemoryHints::Performance,
+                },
+                None,
+            )
+            .await?;
 
         // Configure surface
         let surface_caps = surface.get_capabilities(&adapter);
-        let surface_format = surface_caps.formats.iter()
+        let surface_format = surface_caps
+            .formats
+            .iter()
             .find(|f| f.is_srgb())
             .copied()
             .unwrap_or(surface_caps.formats[0]);
@@ -77,7 +84,13 @@ impl<'window> RenderPipeline<'window> {
         }
     }
 
-    pub fn begin_frame(&self) -> Option<(wgpu::SurfaceTexture, wgpu::TextureView, wgpu::CommandEncoder)> {
+    pub fn begin_frame(
+        &self,
+    ) -> Option<(
+        wgpu::SurfaceTexture,
+        wgpu::TextureView,
+        wgpu::CommandEncoder,
+    )> {
         let frame = match self.surface.get_current_texture() {
             Ok(frame) => frame,
             Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
@@ -93,10 +106,14 @@ impl<'window> RenderPipeline<'window> {
             }
         };
 
-        let view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("Frame Encoder"),
-        });
+        let view = frame
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Frame Encoder"),
+            });
 
         Some((frame, view, encoder))
     }
@@ -112,8 +129,7 @@ mod tests {
 
     #[test]
     fn test_pipeline_creation_fails_without_window() {
-        // This test verifies that the pipeline module compiles
-        // Actual pipeline creation requires a window and GPU
-        assert!(true, "Pipeline module compiles successfully");
+        // This test verifies that the pipeline module compiles.
+        // Actual pipeline creation requires a window and GPU context.
     }
 }

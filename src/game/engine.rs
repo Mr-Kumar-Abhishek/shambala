@@ -1,17 +1,17 @@
-use crate::core::types::GameState;
-use crate::core::game_state::GameStateManager;
-use crate::resources::time::GameTime;
-use crate::resources::input_state::InputStateResource;
-use crate::resources::camera::Camera;
-use crate::resources::asset_manager::AssetManager;
-use crate::resources::audio_manager::AudioManager;
 use crate::core::constants;
+use crate::core::game_state::GameStateManager;
+use crate::core::types::GameState;
+use crate::game::chaos_gate::ChaosGate;
+use crate::game::quest::QuestManager;
+use crate::game::title_screen::TitleScreen;
 use crate::render::pipeline::RenderPipeline;
 use crate::render::sprite::SpriteBatch;
 use crate::render::ui_render::UIRenderer;
-use crate::game::title_screen::TitleScreen;
-use crate::game::chaos_gate::ChaosGate;
-use crate::game::quest::QuestManager;
+use crate::resources::asset_manager::AssetManager;
+use crate::resources::audio_manager::AudioManager;
+use crate::resources::camera::Camera;
+use crate::resources::input_state::InputStateResource;
+use crate::resources::time::GameTime;
 
 /// Central game engine that owns all resources and orchestrates the update loop.
 ///
@@ -105,19 +105,26 @@ impl<'window> GameEngine<'window> {
             );
         }
         // Tile textures
-        for tile in &["floor", "wall", "water", "grass", "path", "entrance", "exit", "treasure"] {
+        for tile in &[
+            "floor", "wall", "water", "grass", "path", "entrance", "exit", "treasure",
+        ] {
             self.assets.register_texture(
                 &format!("tile_{}", tile),
                 &format!("assets/tiles/{}.png", tile),
             );
         }
         // UI assets
-        self.assets.register_texture("hud_frame", "assets/ui/hud_frame.png");
-        self.assets.register_texture("hp_bar", "assets/ui/hp_bar.png");
-        self.assets.register_texture("mp_bar", "assets/ui/mp_bar.png");
+        self.assets
+            .register_texture("hud_frame", "assets/ui/hud_frame.png");
+        self.assets
+            .register_texture("hp_bar", "assets/ui/hp_bar.png");
+        self.assets
+            .register_texture("mp_bar", "assets/ui/mp_bar.png");
         // Audio
-        self.assets.register_texture("bgm_root_town", "assets/audio/bgm/root_town.ogg");
-        self.assets.register_texture("bgm_field", "assets/audio/bgm/field.ogg");
+        self.assets
+            .register_texture("bgm_root_town", "assets/audio/bgm/root_town.ogg");
+        self.assets
+            .register_texture("bgm_field", "assets/audio/bgm/field.ogg");
     }
 
     /// Advance the engine by one frame.
@@ -145,6 +152,12 @@ impl<'window> GameEngine<'window> {
     pub fn shutdown(&mut self) {
         log::info!("Shutting down game engine...");
         self.running = false;
+    }
+}
+
+impl Default for GameEngine<'_> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

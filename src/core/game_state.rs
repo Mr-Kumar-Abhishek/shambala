@@ -68,3 +68,9 @@ impl GameStateManager {
         self.previous_state
     }
 }
+
+impl Default for GameStateManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}

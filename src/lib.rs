@@ -34,9 +34,9 @@
 //! [`Skill`]: components/skill/struct.Skill.html
 
 pub mod components;
-pub mod systems;
-pub mod entities;
-pub mod resources;
 pub mod core;
+pub mod entities;
 pub mod game;
 pub mod render;
+pub mod resources;
+pub mod systems;

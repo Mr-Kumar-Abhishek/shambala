@@ -1,6 +1,6 @@
-use crate::systems::input::InputAction;
 use crate::resources::input_state::InputStateResource;
 use crate::systems::audio_playback::AudioPlaybackSystem;
+use crate::systems::input::InputAction;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OptionsTab {
@@ -33,9 +33,19 @@ pub struct OptionsMenuItem {
 
 #[derive(Debug, Clone)]
 pub enum OptionsItemType {
-    Slider { min: f32, max: f32, current: f32, step: f32 },
-    Toggle { enabled: bool },
-    KeyBinding { action: String, key: String },
+    Slider {
+        min: f32,
+        max: f32,
+        current: f32,
+        step: f32,
+    },
+    Toggle {
+        enabled: bool,
+    },
+    KeyBinding {
+        action: String,
+        key: String,
+    },
     Action,
 }
 
@@ -46,6 +56,12 @@ pub struct OptionsMenu {
     pub selected_item: usize,
     pub items: Vec<Vec<OptionsMenuItem>>,
     pub is_adjusting: bool,
+}
+
+impl Default for OptionsMenu {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl OptionsMenu {
@@ -73,19 +89,34 @@ impl OptionsMenu {
                 id: "master_volume".to_string(),
                 label: "Master Volume".to_string(),
                 value: "100%".to_string(),
-                item_type: OptionsItemType::Slider { min: 0.0, max: 100.0, current: 100.0, step: 5.0 },
+                item_type: OptionsItemType::Slider {
+                    min: 0.0,
+                    max: 100.0,
+                    current: 100.0,
+                    step: 5.0,
+                },
             },
             OptionsMenuItem {
                 id: "bgm_volume".to_string(),
                 label: "BGM Volume".to_string(),
                 value: "70%".to_string(),
-                item_type: OptionsItemType::Slider { min: 0.0, max: 100.0, current: 70.0, step: 5.0 },
+                item_type: OptionsItemType::Slider {
+                    min: 0.0,
+                    max: 100.0,
+                    current: 70.0,
+                    step: 5.0,
+                },
             },
             OptionsMenuItem {
                 id: "sfx_volume".to_string(),
                 label: "SFX Volume".to_string(),
                 value: "100%".to_string(),
-                item_type: OptionsItemType::Slider { min: 0.0, max: 100.0, current: 100.0, step: 5.0 },
+                item_type: OptionsItemType::Slider {
+                    min: 0.0,
+                    max: 100.0,
+                    current: 100.0,
+                    step: 5.0,
+                },
             },
             OptionsMenuItem {
                 id: "mute".to_string(),
@@ -99,34 +130,58 @@ impl OptionsMenu {
     fn create_controls_items() -> Vec<OptionsMenuItem> {
         vec![
             OptionsMenuItem {
-                id: "move_up".to_string(), label: "Move Up".to_string(),
+                id: "move_up".to_string(),
+                label: "Move Up".to_string(),
                 value: "W / Up Arrow".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "move_up".to_string(), key: "W".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "move_up".to_string(),
+                    key: "W".to_string(),
+                },
             },
             OptionsMenuItem {
-                id: "move_down".to_string(), label: "Move Down".to_string(),
+                id: "move_down".to_string(),
+                label: "Move Down".to_string(),
                 value: "S / Down Arrow".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "move_down".to_string(), key: "S".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "move_down".to_string(),
+                    key: "S".to_string(),
+                },
             },
             OptionsMenuItem {
-                id: "move_left".to_string(), label: "Move Left".to_string(),
+                id: "move_left".to_string(),
+                label: "Move Left".to_string(),
                 value: "A / Left Arrow".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "move_left".to_string(), key: "A".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "move_left".to_string(),
+                    key: "A".to_string(),
+                },
             },
             OptionsMenuItem {
-                id: "move_right".to_string(), label: "Move Right".to_string(),
+                id: "move_right".to_string(),
+                label: "Move Right".to_string(),
                 value: "D / Right Arrow".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "move_right".to_string(), key: "D".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "move_right".to_string(),
+                    key: "D".to_string(),
+                },
             },
             OptionsMenuItem {
-                id: "confirm".to_string(), label: "Confirm".to_string(),
+                id: "confirm".to_string(),
+                label: "Confirm".to_string(),
                 value: "Enter / Space".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "confirm".to_string(), key: "Enter".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "confirm".to_string(),
+                    key: "Enter".to_string(),
+                },
             },
             OptionsMenuItem {
-                id: "cancel".to_string(), label: "Cancel".to_string(),
+                id: "cancel".to_string(),
+                label: "Cancel".to_string(),
                 value: "Escape".to_string(),
-                item_type: OptionsItemType::KeyBinding { action: "cancel".to_string(), key: "Escape".to_string() },
+                item_type: OptionsItemType::KeyBinding {
+                    action: "cancel".to_string(),
+                    key: "Escape".to_string(),
+                },
             },
         ]
     }
@@ -134,22 +189,26 @@ impl OptionsMenu {
     fn create_display_items() -> Vec<OptionsMenuItem> {
         vec![
             OptionsMenuItem {
-                id: "resolution".to_string(), label: "Resolution".to_string(),
+                id: "resolution".to_string(),
+                label: "Resolution".to_string(),
                 value: "1280x720".to_string(),
                 item_type: OptionsItemType::Action,
             },
             OptionsMenuItem {
-                id: "fullscreen".to_string(), label: "Fullscreen".to_string(),
+                id: "fullscreen".to_string(),
+                label: "Fullscreen".to_string(),
                 value: "Windowed".to_string(),
                 item_type: OptionsItemType::Toggle { enabled: false },
             },
             OptionsMenuItem {
-                id: "vsync".to_string(), label: "V-Sync".to_string(),
+                id: "vsync".to_string(),
+                label: "V-Sync".to_string(),
                 value: "On".to_string(),
                 item_type: OptionsItemType::Toggle { enabled: true },
             },
             OptionsMenuItem {
-                id: "fps_display".to_string(), label: "Show FPS".to_string(),
+                id: "fps_display".to_string(),
+                label: "Show FPS".to_string(),
                 value: "Off".to_string(),
                 item_type: OptionsItemType::Toggle { enabled: false },
             },
@@ -212,23 +271,24 @@ impl OptionsMenu {
         }
 
         // Confirm to adjust/toggle
-        if input.is_action_pressed(InputAction::Confirm) {
-            if self.selected_item < current_items.len() {
-                match &current_items[self.selected_item].item_type {
-                    OptionsItemType::Slider { .. } => {
-                        self.is_adjusting = true;
-                    }
-                    OptionsItemType::Toggle { .. } => {
-                        // Toggle will be handled in a real implementation
-                    }
-                    _ => {}
+        if input.is_action_pressed(InputAction::Confirm) && self.selected_item < current_items.len()
+        {
+            match &current_items[self.selected_item].item_type {
+                OptionsItemType::Slider { .. } => {
+                    self.is_adjusting = true;
                 }
+                OptionsItemType::Toggle { .. } => {
+                    // Toggle will be handled in a real implementation
+                }
+                _ => {}
             }
         }
     }
 
     fn handle_adjustment(&mut self, input: &InputStateResource, audio: &mut AudioPlaybackSystem) {
-        if input.is_action_pressed(InputAction::Cancel) || input.is_action_pressed(InputAction::Confirm) {
+        if input.is_action_pressed(InputAction::Cancel)
+            || input.is_action_pressed(InputAction::Confirm)
+        {
             self.is_adjusting = false;
             // Apply audio settings
             if let Some(item) = self.items[self.selected_tab].get_mut(self.selected_item) {
@@ -241,7 +301,13 @@ impl OptionsMenu {
         }
 
         if let Some(item) = self.items[self.selected_tab].get_mut(self.selected_item) {
-            if let OptionsItemType::Slider { min, max, current, step } = &mut item.item_type {
+            if let OptionsItemType::Slider {
+                min,
+                max,
+                current,
+                step,
+            } = &mut item.item_type
+            {
                 if input.is_action_pressed(InputAction::MoveLeft) {
                     *current = (*current - *step).max(*min);
                 }
@@ -316,7 +382,7 @@ mod tests {
     fn test_tab_navigation() {
         let mut menu = OptionsMenu::new();
         menu.open();
-        
+
         let mut input = InputStateResource::new();
         input.set_action(InputAction::MoveRight, InputState::Pressed);
         let mut audio = AudioPlaybackSystem::new();
@@ -328,19 +394,19 @@ mod tests {
     fn test_slider_adjustment() {
         let mut menu = OptionsMenu::new();
         menu.open();
-        
+
         let mut audio = AudioPlaybackSystem::new();
         let mut input = InputStateResource::new();
-        
+
         // Enter adjustment mode
         input.set_action(InputAction::Confirm, InputState::Pressed);
         menu.update(&input, &mut audio);
-        
+
         // Adjust left
         let mut adjust_input = InputStateResource::new();
         adjust_input.set_action(InputAction::MoveLeft, InputState::Pressed);
         menu.update(&adjust_input, &mut audio);
-        
+
         // Confirm to exit adjustment
         let mut confirm_input = InputStateResource::new();
         confirm_input.set_action(InputAction::Confirm, InputState::Pressed);
@@ -351,7 +417,7 @@ mod tests {
     fn test_close_with_cancel() {
         let mut menu = OptionsMenu::new();
         menu.open();
-        
+
         let mut input = InputStateResource::new();
         input.set_action(InputAction::Cancel, InputState::Pressed);
         let mut audio = AudioPlaybackSystem::new();

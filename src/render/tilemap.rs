@@ -17,25 +17,31 @@ pub struct TileInfo {
 
 impl Tilemap {
     pub fn from_generated_area(area: &GeneratedArea, tile_size: f32) -> Self {
-        let tiles: Vec<Vec<TileInfo>> = area.tiles.iter().map(|row| {
-            row.iter().map(|tile| {
-                let sprite_id = match tile.tile_type {
-                    TileType::Floor => "tile_floor".to_string(),
-                    TileType::Wall => "tile_wall".to_string(),
-                    TileType::Water => "tile_water".to_string(),
-                    TileType::Grass => "tile_grass".to_string(),
-                    TileType::Path => "tile_path".to_string(),
-                    TileType::Entrance => "tile_entrance".to_string(),
-                    TileType::Exit => "tile_exit".to_string(),
-                    TileType::Treasure => "tile_treasure".to_string(),
-                };
-                TileInfo {
-                    tile_type: tile.tile_type,
-                    sprite_id,
-                    walkable: tile.walkable,
-                }
-            }).collect()
-        }).collect();
+        let tiles: Vec<Vec<TileInfo>> = area
+            .tiles
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|tile| {
+                        let sprite_id = match tile.tile_type {
+                            TileType::Floor => "tile_floor".to_string(),
+                            TileType::Wall => "tile_wall".to_string(),
+                            TileType::Water => "tile_water".to_string(),
+                            TileType::Grass => "tile_grass".to_string(),
+                            TileType::Path => "tile_path".to_string(),
+                            TileType::Entrance => "tile_entrance".to_string(),
+                            TileType::Exit => "tile_exit".to_string(),
+                            TileType::Treasure => "tile_treasure".to_string(),
+                        };
+                        TileInfo {
+                            tile_type: tile.tile_type,
+                            sprite_id,
+                            walkable: tile.walkable,
+                        }
+                    })
+                    .collect()
+            })
+            .collect();
 
         Self {
             tiles,
@@ -59,7 +65,13 @@ impl Tilemap {
         (tx as f32 * self.tile_size, ty as f32 * self.tile_size)
     }
 
-    pub fn visible_tiles(&self, camera_x: f32, camera_y: f32, screen_width: f32, screen_height: f32) -> Vec<(usize, usize, &TileInfo)> {
+    pub fn visible_tiles(
+        &self,
+        camera_x: f32,
+        camera_y: f32,
+        screen_width: f32,
+        screen_height: f32,
+    ) -> Vec<(usize, usize, &TileInfo)> {
         let start_tx = (camera_x / self.tile_size).max(0.0) as usize;
         let start_ty = (camera_y / self.tile_size).max(0.0) as usize;
         let end_tx = ((camera_x + screen_width) / self.tile_size).ceil() as usize;

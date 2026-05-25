@@ -11,9 +11,9 @@
 use shambala::core::constants;
 use shambala::game::engine::GameEngine;
 
+use winit::event::{Event, WindowEvent};
 use winit::event_loop::EventLoop;
 use winit::window::WindowAttributes;
-use winit::event::{Event, WindowEvent};
 
 // winit 0.30 deprecated `create_window`/`run` in favour of `run_app`.
 // These are allowed until the engine migrates to the new trait-based API.
@@ -23,7 +23,11 @@ fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     log::info!("Starting {} v{}", constants::TITLE, "0.2.0");
-    log::info!("Window: {}x{}", constants::WINDOW_WIDTH, constants::WINDOW_HEIGHT);
+    log::info!(
+        "Window: {}x{}",
+        constants::WINDOW_WIDTH,
+        constants::WINDOW_HEIGHT
+    );
 
     // Create winit event loop and window.
     let event_loop = EventLoop::new()?;
@@ -33,7 +37,7 @@ fn main() -> anyhow::Result<()> {
             .with_inner_size(winit::dpi::LogicalSize::new(
                 constants::WINDOW_WIDTH,
                 constants::WINDOW_HEIGHT,
-            ))
+            )),
     )?;
 
     // Initialise the game engine (ECS world, assets, state machine).
@@ -55,25 +59,23 @@ fn main() -> anyhow::Result<()> {
     println!("Assets Registered: {}", engine.assets.textures.len());
 
     // Main event loop — drives the game.
-    event_loop.run(move |event, elwt| {
-        match event {
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::CloseRequested => {
-                    engine.shutdown();
-                    elwt.exit();
+    event_loop.run(move |event, elwt| match event {
+        Event::WindowEvent { event, .. } => match event {
+            WindowEvent::CloseRequested => {
+                engine.shutdown();
+                elwt.exit();
+            }
+            WindowEvent::Resized(size) => {
+                if let Some(ref mut pipeline) = engine.render_pipeline {
+                    pipeline.resize(size);
                 }
-                WindowEvent::Resized(size) => {
-                    if let Some(ref mut pipeline) = engine.render_pipeline {
-                        pipeline.resize(size);
-                    }
-                }
-                _ => {}
-            },
-            Event::AboutToWait => {
-                window.request_redraw();
             }
             _ => {}
+        },
+        Event::AboutToWait => {
+            window.request_redraw();
         }
+        _ => {}
     })?;
 
     Ok(())

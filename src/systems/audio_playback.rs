@@ -27,9 +27,16 @@ pub struct AudioPlaybackSystem {
     pub _stream_handle: Option<rodio::OutputStreamHandle>,
 }
 
+impl Default for AudioPlaybackSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AudioPlaybackSystem {
     pub fn new() -> Self {
-        let (stream, stream_handle) = rodio::OutputStream::try_default().ok()
+        let (stream, stream_handle) = rodio::OutputStream::try_default()
+            .ok()
             .map(|(s, h)| (Some(s), Some(h)))
             .unwrap_or((None, None));
 
@@ -45,14 +52,23 @@ impl AudioPlaybackSystem {
         }
     }
 
-    pub fn register_track(&mut self, id: &str, file_path: &str, track_type: AudioTrackType, loop_: bool) {
-        self.tracks.insert(id.to_string(), AudioTrack {
-            id: id.to_string(),
-            track_type,
-            file_path: file_path.to_string(),
-            volume: 1.0,
-            loop_,
-        });
+    pub fn register_track(
+        &mut self,
+        id: &str,
+        file_path: &str,
+        track_type: AudioTrackType,
+        loop_: bool,
+    ) {
+        self.tracks.insert(
+            id.to_string(),
+            AudioTrack {
+                id: id.to_string(),
+                track_type,
+                file_path: file_path.to_string(),
+                volume: 1.0,
+                loop_,
+            },
+        );
     }
 
     pub fn play_bgm(&mut self, track_id: &str) {
@@ -127,14 +143,24 @@ mod tests {
     #[test]
     fn test_register_track() {
         let mut audio = AudioPlaybackSystem::new();
-        audio.register_track("bgm_field", "assets/audio/bgm/field.ogg", AudioTrackType::Bgm, true);
+        audio.register_track(
+            "bgm_field",
+            "assets/audio/bgm/field.ogg",
+            AudioTrackType::Bgm,
+            true,
+        );
         assert_eq!(audio.track_count(), 1);
     }
 
     #[test]
     fn test_play_bgm() {
         let mut audio = AudioPlaybackSystem::new();
-        audio.register_track("bgm_field", "assets/audio/bgm/field.ogg", AudioTrackType::Bgm, true);
+        audio.register_track(
+            "bgm_field",
+            "assets/audio/bgm/field.ogg",
+            AudioTrackType::Bgm,
+            true,
+        );
         audio.play_bgm("bgm_field");
         assert_eq!(audio.current_bgm, Some("bgm_field".to_string()));
     }

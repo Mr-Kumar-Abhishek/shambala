@@ -1,17 +1,48 @@
 #[derive(Debug, Clone)]
 pub enum GameEvent {
-    PlayerDamaged { amount: u32, source: String },
-    PlayerHealed { amount: u32, source: String },
-    EnemyDefeated { enemy_id: String, exp_reward: u64 },
-    LevelUp { new_level: u32 },
-    ItemObtained { item_id: String, quantity: u32 },
-    DataDrainExecuted { success: bool, target: String },
-    AreaTransition { from: String, to: String },
-    PartyMemberJoined { name: String },
-    PartyMemberLeft { name: String },
-    DialogueStarted { npc_id: String },
-    DialogueEnded { npc_id: String },
-    QuestUpdated { quest_id: String, status: QuestStatus },
+    PlayerDamaged {
+        amount: u32,
+        source: String,
+    },
+    PlayerHealed {
+        amount: u32,
+        source: String,
+    },
+    EnemyDefeated {
+        enemy_id: String,
+        exp_reward: u64,
+    },
+    LevelUp {
+        new_level: u32,
+    },
+    ItemObtained {
+        item_id: String,
+        quantity: u32,
+    },
+    DataDrainExecuted {
+        success: bool,
+        target: String,
+    },
+    AreaTransition {
+        from: String,
+        to: String,
+    },
+    PartyMemberJoined {
+        name: String,
+    },
+    PartyMemberLeft {
+        name: String,
+    },
+    DialogueStarted {
+        npc_id: String,
+    },
+    DialogueEnded {
+        npc_id: String,
+    },
+    QuestUpdated {
+        quest_id: String,
+        status: QuestStatus,
+    },
     GameSaved,
     ConnectionLost,
 }
@@ -49,15 +80,13 @@ impl EventBus {
     }
 
     pub fn has_event(&self, event_type: &str) -> bool {
-        self.events.iter().any(|e| {
-            match e {
-                GameEvent::PlayerDamaged { .. } => event_type == "PlayerDamaged",
-                GameEvent::EnemyDefeated { .. } => event_type == "EnemyDefeated",
-                GameEvent::LevelUp { .. } => event_type == "LevelUp",
-                GameEvent::DataDrainExecuted { .. } => event_type == "DataDrainExecuted",
-                GameEvent::AreaTransition { .. } => event_type == "AreaTransition",
-                _ => false,
-            }
+        self.events.iter().any(|e| match e {
+            GameEvent::PlayerDamaged { .. } => event_type == "PlayerDamaged",
+            GameEvent::EnemyDefeated { .. } => event_type == "EnemyDefeated",
+            GameEvent::LevelUp { .. } => event_type == "LevelUp",
+            GameEvent::DataDrainExecuted { .. } => event_type == "DataDrainExecuted",
+            GameEvent::AreaTransition { .. } => event_type == "AreaTransition",
+            _ => false,
         })
     }
 
@@ -73,7 +102,10 @@ mod tests {
     #[test]
     fn test_emit_event() {
         let mut bus = EventBus::new(100);
-        bus.emit(GameEvent::PlayerDamaged { amount: 10, source: "Goblin".to_string() });
+        bus.emit(GameEvent::PlayerDamaged {
+            amount: 10,
+            source: "Goblin".to_string(),
+        });
         assert_eq!(bus.events.len(), 1);
     }
 
@@ -98,7 +130,10 @@ mod tests {
     #[test]
     fn test_has_event() {
         let mut bus = EventBus::new(100);
-        bus.emit(GameEvent::EnemyDefeated { enemy_id: "goblin_1".to_string(), exp_reward: 15 });
+        bus.emit(GameEvent::EnemyDefeated {
+            enemy_id: "goblin_1".to_string(),
+            exp_reward: 15,
+        });
         assert!(bus.has_event("EnemyDefeated"));
         assert!(!bus.has_event("LevelUp"));
     }

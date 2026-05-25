@@ -11,10 +11,14 @@ impl PartySystem {
         }
 
         let exp_per_member = total_exp / member_count;
-        party.members.iter().map(|m| {
-            let bond_bonus = 1.0 + (m.bond_level as f64 * 0.1);
-            (exp_per_member as f64 * bond_bonus) as u64
-        }).collect()
+        party
+            .members
+            .iter()
+            .map(|m| {
+                let bond_bonus = 1.0 + (m.bond_level as f64 * 0.1);
+                (exp_per_member as f64 * bond_bonus) as u64
+            })
+            .collect()
     }
 
     pub fn get_party_average_level(stats: &[&Stats]) -> u32 {

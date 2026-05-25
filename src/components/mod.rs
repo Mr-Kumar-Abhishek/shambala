@@ -17,13 +17,13 @@
 //! | [`status`] | Status effect instances (poison, paralysis, etc.) |
 //! | [`data_drain`] | Data Drain charge state (special mechanic) |
 
-pub mod position;
-pub mod stats;
-pub mod render;
-pub mod player;
-pub mod enemy;
-pub mod party;
-pub mod inventory;
-pub mod skill;
-pub mod status;
 pub mod data_drain;
+pub mod enemy;
+pub mod inventory;
+pub mod party;
+pub mod player;
+pub mod position;
+pub mod render;
+pub mod skill;
+pub mod stats;
+pub mod status;

@@ -7,6 +7,12 @@ pub struct GameTime {
     pub time_scale: f32,
 }
 
+impl Default for GameTime {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameTime {
     pub fn new() -> Self {
         Self {
@@ -33,7 +39,7 @@ impl GameTime {
     }
 
     pub fn set_time_scale(&mut self, scale: f32) {
-        self.time_scale = scale.max(0.0).min(10.0);
+        self.time_scale = scale.clamp(0.0, 10.0);
     }
 }
 

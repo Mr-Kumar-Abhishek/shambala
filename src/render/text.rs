@@ -17,12 +17,12 @@ impl TextRenderer {
     pub fn get_glyph_uv(&self, char_code: u8) -> (f32, f32, f32, f32) {
         let row = (char_code as u32) / self.characters_per_row;
         let col = (char_code as u32) % self.characters_per_row;
-        
+
         let gx = col as f32 * self.glyph_size.0 as f32;
         let gy = row as f32 * self.glyph_size.1 as f32;
         let gw = self.glyph_size.0 as f32;
         let gh = self.glyph_size.1 as f32;
-        
+
         (gx, gy, gw, gh)
     }
 
@@ -35,10 +35,10 @@ impl TextRenderer {
     pub fn wrap_text<'a>(&self, text: &'a str, max_width: f32, scale: f32) -> Vec<&'a str> {
         let char_width = self.glyph_size.0 as f32 * scale;
         let max_chars = (max_width / char_width) as usize;
-        
+
         let mut lines = Vec::new();
         let mut start = 0;
-        
+
         while start < text.len() {
             let end = (start + max_chars).min(text.len());
             // Try to break at word boundary
@@ -52,7 +52,7 @@ impl TextRenderer {
             lines.push(&text[start..end]);
             start = end;
         }
-        
+
         lines
     }
 }
@@ -83,7 +83,7 @@ mod tests {
     fn test_text_wrapping() {
         let renderer = TextRenderer::new("font", (16, 16), 16);
         let lines = renderer.wrap_text("Hello World", 80.0, 1.0);
-        assert!(lines.len() >= 1);
+        assert!(!lines.is_empty());
     }
 
     #[test]

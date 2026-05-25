@@ -1,6 +1,6 @@
-use crate::game::quest::{DialogueNode, DialogueChoice, QuestManager};
-use crate::systems::input::InputAction;
+use crate::game::quest::{DialogueChoice, DialogueNode, QuestManager};
 use crate::resources::input_state::InputStateResource;
+use crate::systems::input::InputAction;
 
 #[derive(Debug, Clone)]
 pub struct NPCDialogue {
@@ -57,14 +57,22 @@ impl NPCDialogue {
         }
     }
 
-    pub fn handle_input(&mut self, input: &InputStateResource, quest_manager: &mut QuestManager) -> Option<String> {
+    pub fn handle_input(
+        &mut self,
+        input: &InputStateResource,
+        quest_manager: &mut QuestManager,
+    ) -> Option<String> {
         if !self.is_active || !self.text_fully_displayed {
             return None;
         }
 
         // Clone node data to avoid borrow conflicts with self mutations
         let node_data = self.get_current_node().map(|node| {
-            (node.is_end, node.event_to_trigger.clone(), node.choices.clone())
+            (
+                node.is_end,
+                node.event_to_trigger.clone(),
+                node.choices.clone(),
+            )
         });
 
         if let Some((is_end, event_to_trigger, choices)) = node_data {
@@ -78,7 +86,8 @@ impl NPCDialogue {
             }
 
             // Filter available choices based on quest status
-            let available_choices: Vec<DialogueChoice> = choices.into_iter()
+            let available_choices: Vec<DialogueChoice> = choices
+                .into_iter()
                 .filter(|choice| {
                     if let Some((ref quest_id, required_status)) = choice.required_quest_status {
                         if let Some(quest) = quest_manager.get_quest(quest_id) {
@@ -109,14 +118,14 @@ impl NPCDialogue {
             }
 
             // Confirm choice
-            if input.is_action_pressed(InputAction::Confirm) {
-                if self.selected_choice < available_choices.len() {
-                    let choice = &available_choices[self.selected_choice];
-                    self.current_node = choice.next_node_id.clone();
-                    self.selected_choice = 0;
-                    self.typing_progress = 0.0;
-                    self.text_fully_displayed = false;
-                }
+            if input.is_action_pressed(InputAction::Confirm)
+                && self.selected_choice < available_choices.len()
+            {
+                let choice = &available_choices[self.selected_choice];
+                self.current_node = choice.next_node_id.clone();
+                self.selected_choice = 0;
+                self.typing_progress = 0.0;
+                self.text_fully_displayed = false;
             }
 
             // Cancel dialogue
@@ -143,7 +152,8 @@ impl NPCDialogue {
 
     pub fn get_available_choices(&self, quest_manager: &QuestManager) -> Vec<DialogueChoice> {
         if let Some(node) = self.get_current_node() {
-            node.choices.iter()
+            node.choices
+                .iter()
                 .filter(|choice| {
                     if let Some((ref quest_id, required_status)) = choice.required_quest_status {
                         if let Some(quest) = quest_manager.get_quest(quest_id) {
@@ -160,8 +170,13 @@ impl NPCDialogue {
         }
     }
 
-    pub fn can_interact(&self, player_pos: &crate::components::position::Position, npc_pos: &crate::components::position::Position) -> bool {
-        let distance = crate::systems::physics::PhysicsSystem::distance_between(player_pos, npc_pos);
+    pub fn can_interact(
+        &self,
+        player_pos: &crate::components::position::Position,
+        npc_pos: &crate::components::position::Position,
+    ) -> bool {
+        let distance =
+            crate::systems::physics::PhysicsSystem::distance_between(player_pos, npc_pos);
         distance <= 64.0 // Interaction range
     }
 }
@@ -181,33 +196,29 @@ mod tests {
     #[test]
     fn test_start_dialogue() {
         let mut dialogue = NPCDialogue::new("npc_test", "Test");
-        dialogue.start_dialogue(vec![
-            DialogueNode {
-                id: "start".to_string(),
-                speaker: "Test".to_string(),
-                text: "Hello!".to_string(),
-                choices: vec![],
-                is_end: true,
-                event_to_trigger: None,
-            },
-        ]);
+        dialogue.start_dialogue(vec![DialogueNode {
+            id: "start".to_string(),
+            speaker: "Test".to_string(),
+            text: "Hello!".to_string(),
+            choices: vec![],
+            is_end: true,
+            event_to_trigger: None,
+        }]);
         assert!(dialogue.is_active);
     }
 
     #[test]
     fn test_dialogue_typing() {
         let mut dialogue = NPCDialogue::new("npc_test", "Test");
-        dialogue.start_dialogue(vec![
-            DialogueNode {
-                id: "start".to_string(),
-                speaker: "Test".to_string(),
-                text: "Hello traveler!".to_string(),
-                choices: vec![],
-                is_end: true,
-                event_to_trigger: None,
-            },
-        ]);
-        
+        dialogue.start_dialogue(vec![DialogueNode {
+            id: "start".to_string(),
+            speaker: "Test".to_string(),
+            text: "Hello traveler!".to_string(),
+            choices: vec![],
+            is_end: true,
+            event_to_trigger: None,
+        }]);
+
         dialogue.update(0.5);
         let displayed = dialogue.get_displayed_text();
         assert!(!displayed.is_empty());
@@ -238,16 +249,19 @@ mod tests {
                 event_to_trigger: None,
             },
             DialogueNode {
-                id: "a".to_string(), speaker: "Test".to_string(),
+                id: "a".to_string(),
+                speaker: "Test".to_string(),
                 text: "You chose A".to_string(),
-                choices: vec![], is_end: true, event_to_trigger: None,
+                choices: vec![],
+                is_end: true,
+                event_to_trigger: None,
             },
         ]);
-        
+
         // Fast-forward typing
         dialogue.typing_progress = 999.0;
         dialogue.text_fully_displayed = true;
-        
+
         let mut input = InputStateResource::new();
         input.set_action(InputAction::MoveDown, InputState::Pressed);
         let mut quest_manager = QuestManager::new();
@@ -259,10 +273,10 @@ mod tests {
     fn test_interaction_range() {
         let npc_pos = crate::components::position::Position::new(100.0, 100.0);
         let player_pos = crate::components::position::Position::new(110.0, 105.0);
-        
+
         let dialogue = NPCDialogue::new("npc_test", "Test");
         assert!(dialogue.can_interact(&player_pos, &npc_pos));
-        
+
         let far_pos = crate::components::position::Position::new(500.0, 500.0);
         assert!(!dialogue.can_interact(&far_pos, &npc_pos));
     }
@@ -270,16 +284,17 @@ mod tests {
     #[test]
     fn test_end_dialogue() {
         let mut dialogue = NPCDialogue::new("npc_test", "Test");
-        dialogue.start_dialogue(vec![
-            DialogueNode {
-                id: "start".to_string(), speaker: "Test".to_string(),
-                text: "Bye!".to_string(), choices: vec![], is_end: true,
-                event_to_trigger: None,
-            },
-        ]);
+        dialogue.start_dialogue(vec![DialogueNode {
+            id: "start".to_string(),
+            speaker: "Test".to_string(),
+            text: "Bye!".to_string(),
+            choices: vec![],
+            is_end: true,
+            event_to_trigger: None,
+        }]);
         dialogue.typing_progress = 999.0;
         dialogue.text_fully_displayed = true;
-        
+
         let mut input = InputStateResource::new();
         input.set_action(InputAction::Confirm, InputState::Pressed);
         let mut quest_manager = QuestManager::new();

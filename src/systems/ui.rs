@@ -36,47 +36,77 @@ impl UISystem {
         HUD {
             hp_bar: UIElement {
                 id: "hp_bar".to_string(),
-                x: 20.0, y: 20.0, width: 200.0, height: 20.0,
+                x: 20.0,
+                y: 20.0,
+                width: 200.0,
+                height: 20.0,
                 visible: true,
-                element_type: UIElementType::ProgressBar { current: 100.0, max: 100.0 },
+                element_type: UIElementType::ProgressBar {
+                    current: 100.0,
+                    max: 100.0,
+                },
             },
             mp_bar: UIElement {
                 id: "mp_bar".to_string(),
-                x: 20.0, y: 45.0, width: 200.0, height: 20.0,
+                x: 20.0,
+                y: 45.0,
+                width: 200.0,
+                height: 20.0,
                 visible: true,
-                element_type: UIElementType::ProgressBar { current: 100.0, max: 100.0 },
+                element_type: UIElementType::ProgressBar {
+                    current: 100.0,
+                    max: 100.0,
+                },
             },
             data_drain_gauge: UIElement {
                 id: "data_drain".to_string(),
-                x: 20.0, y: 70.0, width: 200.0, height: 15.0,
+                x: 20.0,
+                y: 70.0,
+                width: 200.0,
+                height: 15.0,
                 visible: true,
-                element_type: UIElementType::ProgressBar { current: 0.0, max: 100.0 },
+                element_type: UIElementType::ProgressBar {
+                    current: 0.0,
+                    max: 100.0,
+                },
             },
             party_frames: Vec::new(),
             minimap: UIElement {
                 id: "minimap".to_string(),
-                x: 1100.0, y: 20.0, width: 160.0, height: 160.0,
+                x: 1100.0,
+                y: 20.0,
+                width: 160.0,
+                height: 160.0,
                 visible: true,
                 element_type: UIElementType::Panel,
             },
             chat_log: UIElement {
                 id: "chat_log".to_string(),
-                x: 20.0, y: 600.0, width: 400.0, height: 100.0,
+                x: 20.0,
+                y: 600.0,
+                width: 400.0,
+                height: 100.0,
                 visible: true,
                 element_type: UIElementType::Panel,
             },
-            skill_bar: vec![
-                UIElement {
-                    id: "skill_1".to_string(), x: 540.0, y: 680.0,
-                    width: 40.0, height: 40.0, visible: true,
-                    element_type: UIElementType::Button("Skill 1".to_string()),
-                },
-            ],
+            skill_bar: vec![UIElement {
+                id: "skill_1".to_string(),
+                x: 540.0,
+                y: 680.0,
+                width: 40.0,
+                height: 40.0,
+                visible: true,
+                element_type: UIElementType::Button("Skill 1".to_string()),
+            }],
         }
     }
 
     pub fn update_progress_bar(element: &mut UIElement, current: f32, max: f32) {
-        if let UIElementType::ProgressBar { current: ref mut cur, max: ref mut m } = &mut element.element_type {
+        if let UIElementType::ProgressBar {
+            current: ref mut cur,
+            max: ref mut m,
+        } = &mut element.element_type
+        {
             *cur = current;
             *m = max;
         }
@@ -104,9 +134,16 @@ mod tests {
     #[test]
     fn test_update_progress_bar() {
         let mut element = UIElement {
-            id: "test".to_string(), x: 0.0, y: 0.0, width: 100.0, height: 20.0,
+            id: "test".to_string(),
+            x: 0.0,
+            y: 0.0,
+            width: 100.0,
+            height: 20.0,
             visible: true,
-            element_type: UIElementType::ProgressBar { current: 50.0, max: 100.0 },
+            element_type: UIElementType::ProgressBar {
+                current: 50.0,
+                max: 100.0,
+            },
         };
         UISystem::update_progress_bar(&mut element, 75.0, 100.0);
         if let UIElementType::ProgressBar { current, max } = &element.element_type {
@@ -120,7 +157,11 @@ mod tests {
     #[test]
     fn test_is_clicked() {
         let element = UIElement {
-            id: "btn".to_string(), x: 100.0, y: 100.0, width: 50.0, height: 30.0,
+            id: "btn".to_string(),
+            x: 100.0,
+            y: 100.0,
+            width: 50.0,
+            height: 30.0,
             visible: true,
             element_type: UIElementType::Button("Test".to_string()),
         };

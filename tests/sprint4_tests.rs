@@ -1,20 +1,20 @@
-use shambala::systems::combat_integration::{CombatEncounter, CombatIntegrationSystem};
-use shambala::systems::exploration::ExplorationSystem;
-use shambala::game::dialogue::NPCDialogue;
-use shambala::game::options_menu::OptionsMenu;
-use shambala::game::progression::{SkillTree, ProgressionSystem};
-use shambala::components::stats::Stats;
+use shambala::components::enemy::{Enemy, EnemyType};
 use shambala::components::position::{Position, Velocity};
-use shambala::resources::input_state::InputStateResource;
-use shambala::resources::camera::Camera;
-use shambala::systems::input::{InputAction, InputState};
-use shambala::systems::effects::EffectsManager;
-use shambala::systems::animation::AnimationManager;
-use shambala::systems::audio_playback::AudioPlaybackSystem;
-use shambala::game::event::EventBus;
+use shambala::components::stats::Stats;
 use shambala::core::types::Class;
 use shambala::entities::area::AreaEntity;
-use shambala::components::enemy::{Enemy, EnemyType};
+use shambala::game::dialogue::NPCDialogue;
+use shambala::game::event::EventBus;
+use shambala::game::options_menu::OptionsMenu;
+use shambala::game::progression::{ProgressionSystem, SkillTree};
+use shambala::resources::camera::Camera;
+use shambala::resources::input_state::InputStateResource;
+use shambala::systems::animation::AnimationManager;
+use shambala::systems::audio_playback::AudioPlaybackSystem;
+use shambala::systems::combat_integration::{CombatEncounter, CombatIntegrationSystem};
+use shambala::systems::effects::EffectsManager;
+use shambala::systems::exploration::ExplorationSystem;
+use shambala::systems::input::{InputAction, InputState};
 
 // ===========================================================================
 // Sprint 4 Integration Tests
@@ -25,7 +25,7 @@ fn test_full_combat_encounter() {
     let player = Stats::new(Class::HeavyBlade);
     let mut enemy = Stats::new(Class::Wavemaster);
     enemy.hp = 1; // Guaranteed one-hit kill
-    
+
     let mut encounter = CombatEncounter::new(player, enemy);
     assert!(encounter.is_active);
 
@@ -58,7 +58,13 @@ fn test_combat_with_visualization() {
     };
 
     CombatIntegrationSystem::process_combat_result(
-        &result, &mut effects, &mut animations, &mut audio, &mut event_bus, 100.0, 100.0,
+        &result,
+        &mut effects,
+        &mut animations,
+        &mut audio,
+        &mut event_bus,
+        100.0,
+        100.0,
     );
 
     assert_eq!(effects.damage_count(), 1);
@@ -98,13 +104,11 @@ fn test_npc_dialogue_flow() {
             id: "start".to_string(),
             speaker: "Helba".to_string(),
             text: "Welcome to Shambala.".to_string(),
-            choices: vec![
-                shambala::game::quest::DialogueChoice {
-                    text: "Tell me more.".to_string(),
-                    next_node_id: "info".to_string(),
-                    required_quest_status: None,
-                },
-            ],
+            choices: vec![shambala::game::quest::DialogueChoice {
+                text: "Tell me more.".to_string(),
+                next_node_id: "info".to_string(),
+                required_quest_status: None,
+            }],
             is_end: false,
             event_to_trigger: None,
         },
@@ -194,11 +198,8 @@ fn test_exploration_enemy_proximity() {
     let enemy = Enemy::new(EnemyType::Goblin);
     let enemy_pos = Position::new(50.0, 0.0);
 
-    let nearby = ExplorationSystem::check_enemy_proximity(
-        &player_pos,
-        &[(enemy, enemy_pos)],
-        100.0,
-    );
+    let nearby =
+        ExplorationSystem::check_enemy_proximity(&player_pos, &[(enemy, enemy_pos)], 100.0);
     assert_eq!(nearby.len(), 1);
 }
 

@@ -9,6 +9,12 @@ pub struct InputStateResource {
     pub mouse_pressed: bool,
 }
 
+impl Default for InputStateResource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InputStateResource {
     pub fn new() -> Self {
         Self {

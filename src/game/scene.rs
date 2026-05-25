@@ -25,6 +25,12 @@ pub struct SceneManager {
     pub scenes: Vec<Scene>,
 }
 
+impl Default for SceneManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SceneManager {
     pub fn new() -> Self {
         Self {
@@ -88,8 +94,10 @@ mod tests {
     fn test_load_scene() {
         let mut manager = SceneManager::new();
         manager.register_scene(Scene {
-            id: "field_1".to_string(), scene_type: SceneType::Field,
-            entities: vec![], is_loaded: false,
+            id: "field_1".to_string(),
+            scene_type: SceneType::Field,
+            entities: vec![],
+            is_loaded: false,
         });
         assert!(manager.load_scene("field_1").is_ok());
         assert!(manager.current_scene.unwrap().is_loaded);
@@ -103,7 +111,10 @@ mod tests {
 
     #[test]
     fn test_scene_for_state() {
-        assert_eq!(SceneManager::scene_for_state(GameState::Exploring), Some(SceneType::Field));
+        assert_eq!(
+            SceneManager::scene_for_state(GameState::Exploring),
+            Some(SceneType::Field)
+        );
         assert_eq!(SceneManager::scene_for_state(GameState::Boot), None);
     }
 }
