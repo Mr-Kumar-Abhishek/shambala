@@ -109,7 +109,6 @@ impl<'window> RenderPipeline<'window> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn test_pipeline_creation_fails_without_window() {

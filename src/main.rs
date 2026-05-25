@@ -5,6 +5,9 @@ use winit::event_loop::EventLoop;
 use winit::window::WindowAttributes;
 use winit::event::{Event, WindowEvent};
 
+// winit 0.30 deprecated create_window/run in favour of run_app.
+// These are allowed until the engine migrates to the new trait-based API.
+#[allow(deprecated)]
 fn main() -> anyhow::Result<()> {
     // Initialize logging
     env_logger::init();

@@ -151,7 +151,6 @@ impl TextureManager {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn test_texture_manager_creation() {

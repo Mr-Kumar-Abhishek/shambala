@@ -169,7 +169,6 @@ impl NPCDialogue {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::quest::Quest;
     use crate::systems::input::InputState;
 
     #[test]
