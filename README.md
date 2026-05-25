@@ -1,6 +1,6 @@
 # Shambala
 
-[![CI](https://github.com/your-username/shambala/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/shambala/actions/workflows/ci.yml)
+[![CI](https://github.com/Mr-Kumar-Abhishek/shambala/actions/workflows/ci.yml/badge.svg)](https://github.com/Mr-Kumar-Abhishek/shambala/actions/workflows/ci.yml)
 ![Rust](https://img.shields.io/badge/rust-1.85%2B-orange)
 ![Version](https://img.shields.io/badge/version-0.4.0-blue)
 ![Tests](https://img.shields.io/badge/tests-307_passing-brightgreen)
@@ -83,7 +83,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/shambala.git
+git clone https://github.com/Mr-Kumar-Abhishek/shambala.git
 cd shambala
 
 # Run in debug mode (fast iteration)
